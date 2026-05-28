@@ -13,7 +13,10 @@ Single flow:
   3. Run gitleaks against full history with --log-opts filters honored
   4. Push findings (one record per finding, including branch_ref + is_dangling)
 
-Pricing: $0.01 actor_start + $0.02 per repo scanned. No third event.
+Pricing:
+  $0.01  actor_start
+  $0.001 per_code_search_query (fires only during PAT-enabled repo discovery)
+  $0.02  per_repo_scanned
 """
 from __future__ import annotations
 
@@ -266,7 +269,7 @@ def build_code_search_queries(inputs: Inputs, service: Service) -> list[str]:
     return queries
 
 
-def discover_repos_via_code_search(
+async def discover_repos_via_code_search(
     client: CodeSearchClient,
     queries: list[str],
     inputs: Inputs,
@@ -277,6 +280,9 @@ def discover_repos_via_code_search(
     This is the precision step: instead of cloning 50 repos that just happen to
     mention the keyword, we ask Code Search 'which files contain the actual
     pattern?' and dedupe to ~20-30 unique repos that truly contain the signal.
+
+    Each query fires the `per_code_search_query` PPE event ($0.001) so the
+    declared pricing matches actual behavior.
     """
     unique: dict[str, Repo] = {}
     for query_base in queries:
@@ -286,6 +292,10 @@ def discover_repos_via_code_search(
             query_base, scope=inputs.scope, target=inputs.target, language=inputs.language,
         )
         Actor.log.info("repo-discovery query: %s", full_query)
+        try:
+            await Actor.charge("per_code_search_query")
+        except Exception:
+            pass  # PPE not configured locally; cloud-only
         try:
             hits = client.search(full_query, max_results=max_repos * 4)  # over-fetch for dedup
         except CodeSearchError as exc:
@@ -355,7 +365,7 @@ async def main() -> None:
                 queries = build_code_search_queries(inputs, scan_service)
                 if queries:
                     client = CodeSearchClient(inputs.github_pat)
-                    repos = discover_repos_via_code_search(
+                    repos = await discover_repos_via_code_search(
                         client, queries, inputs, inputs.max_results,
                     )
                     Actor.log.info(
