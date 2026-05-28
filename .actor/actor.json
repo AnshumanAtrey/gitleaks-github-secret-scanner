@@ -3,11 +3,92 @@
   "name": "gitleaks-github-secret-scanner",
   "title": "Gitleaks Cloud — GitHub API Key Hunter & Secret Scanner",
   "description": "Hunt leaked API keys across GitHub. Pick a known platform (30 services: Razorpay, Stripe, AWS, OpenAI, Anthropic + more), a keyword (we expand variants), or paste a custom regex. Scan a repo, an org, or all of GitHub. With a GitHub PAT, fast Code Search unlocks. Smart key-secret pairing.",
-  "version": "0.13",
+  "version": "0.14",
   "buildTag": "latest",
   "input": "./INPUT_SCHEMA.json",
+  "output": "./output_schema.json",
   "storages": {
-    "dataset": "./output_schema.json"
+    "dataset": {
+      "actorSpecification": 1,
+      "title": "Secret Findings",
+      "views": {
+        "overview": {
+          "title": "Findings",
+          "description": "All leaked secrets across scanned repos.",
+          "transformation": {
+            "fields": [
+              "repo_url",
+              "file",
+              "line",
+              "secret_name",
+              "secret_value",
+              "paired",
+              "paired_with",
+              "permalink",
+              "platform",
+              "branch_ref",
+              "is_dangling",
+              "rule_id",
+              "commit_sha",
+              "is_test_key",
+              "author_name",
+              "author_email",
+              "commit_date"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "repo_url":     {"label": "Repo", "format": "link"},
+              "file":         {"label": "File"},
+              "line":         {"label": "Line"},
+              "secret_name":  {"label": "Var name"},
+              "secret_value": {"label": "Secret value"},
+              "paired":       {"label": "Paired?"},
+              "paired_with":  {"label": "Paired component"},
+              "permalink":    {"label": "Open in GitHub", "format": "link"},
+              "platform":     {"label": "Platform"},
+              "branch_ref":   {"label": "Ref"},
+              "is_dangling":  {"label": "Dangling?"},
+              "rule_id":      {"label": "Rule"},
+              "commit_sha":   {"label": "Commit"},
+              "is_test_key":  {"label": "Test key?"},
+              "author_name":  {"label": "Author"},
+              "author_email": {"label": "Author email"},
+              "commit_date":  {"label": "Commit date"}
+            }
+          }
+        },
+        "paired_credentials": {
+          "title": "Paired Credentials",
+          "description": "Only findings where the id and secret were both leaked in the same file — directly usable credential pairs.",
+          "transformation": {
+            "fields": [
+              "repo_url",
+              "file",
+              "line",
+              "paired_with",
+              "secret_value",
+              "platform",
+              "permalink"
+            ],
+            "flatten": ["paired_with"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "repo_url":     {"label": "Repo", "format": "link"},
+              "file":         {"label": "File"},
+              "line":         {"label": "Line"},
+              "paired_with":  {"label": "ID component"},
+              "secret_value": {"label": "Secret component"},
+              "platform":     {"label": "Platform"},
+              "permalink":    {"label": "Open in GitHub", "format": "link"}
+            }
+          }
+        }
+      }
+    }
   },
   "dockerfile": "../Dockerfile",
   "readme": "../README.md",

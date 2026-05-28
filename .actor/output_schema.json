@@ -1,137 +1,20 @@
 {
-  "actorSpecification": 1,
-  "fields": {
+    "actorOutputSchemaVersion": 1,
+    "title": "Gitleaks Cloud Output",
+    "description": "Leaked API keys, wallet private keys, and secrets discovered across GitHub. Each finding is pushed as one dataset record. Records carry per-leak metadata (repo, file, line, permalink, commit, author) plus pairing info (id+secret in same file) and a `branch_ref` indicating whether the leak lives on a live branch, a PR ref, or a dangling commit.",
     "type": "object",
     "properties": {
-      "repo_url": {
-        "type": "string",
-        "description": "GitHub URL of the repository containing the finding."
-      },
-      "file": {
-        "type": "string",
-        "description": "Path of the file (relative to the repo root) where the secret was found."
-      },
-      "line": {
-        "type": "integer",
-        "description": "1-based line number inside the file."
-      },
-      "permalink": {
-        "type": "string",
-        "description": "Direct GitHub URL to the file:line where the secret appears (clone mode uses commit SHA; code_search uses default branch)."
-      },
-      "secret_name": {
-        "type": "string",
-        "description": "Short label of the rule that fired (e.g. 'razorpay-key-secret')."
-      },
-      "secret_value": {
-        "type": "string",
-        "description": "The actual leaked secret value."
-      },
-      "paired": {
-        "type": "string",
-        "enum": ["yes", "no"],
-        "description": "'yes' if the secret was paired with its corresponding ID in the same file."
-      },
-      "paired_with": {
-        "type": ["object", "null"],
-        "description": "When paired='yes', contains {name, value, line} of the paired component. Null otherwise.",
-        "properties": {
-          "name": {"type": "string"},
-          "value": {"type": "string"},
-          "line": {"type": "integer"}
+        "findings": {
+            "type": "string",
+            "title": "All Findings",
+            "description": "Default dataset. One record per leaked secret. Filter by `paired=yes` for directly-usable id+secret pairs, by `branch_ref` to focus on dangling commits or PR refs, or by `is_test_key=false` to drop public test keys.",
+            "template": "{{links.apiDefaultDatasetUrl}}/items"
+        },
+        "log": {
+            "type": "string",
+            "title": "Run Log",
+            "description": "Full execution log with discovered repo list, per-repo scan timing, and any clone/scan errors.",
+            "template": "{{links.publicRunUrl}}/log"
         }
-      },
-      "platform": {
-        "type": "string",
-        "description": "Service or label the scan targeted (e.g. 'razorpay', 'keyword:anthropic', 'regex:custom')."
-      },
-      "scan_method": {
-        "type": "string",
-        "enum": ["clone", "code_search"],
-        "description": "Which engine produced the finding: 'clone' = git history scan via gitleaks; 'code_search' = GitHub Code Search API."
-      },
-      "rule_id": {
-        "type": "string",
-        "description": "Detection rule identifier."
-      },
-      "commit_sha": {
-        "type": "string",
-        "description": "Commit SHA where the secret was found (clone mode) or blob SHA (code_search mode)."
-      },
-      "is_test_key": {
-        "type": "boolean",
-        "description": "True if the secret matches a public-by-design test/sandbox pattern."
-      },
-      "author_name": {
-        "type": "string",
-        "description": "Commit author name (clone mode only; empty for code_search)."
-      },
-      "author_email": {
-        "type": "string",
-        "description": "Commit author email (clone mode only; empty for code_search)."
-      },
-      "commit_date": {
-        "type": "string",
-        "description": "ISO timestamp of the commit (clone mode only; empty for code_search)."
-      },
-      "branch_ref": {
-        "type": "string",
-        "description": "Which git ref the leak was reached from. Examples: 'history' (any reachable ref), 'dangling' (unreachable commit, found via git fsck). Helps determine recovery effort."
-      },
-      "is_dangling": {
-        "type": "boolean",
-        "description": "True if the commit holding the leak is unreachable from any branch — found via git fsck --dangling. Indicates the developer tried to delete the leak via rebase but didn't garbage-collect."
-      }
-    },
-    "required": ["repo_url", "file", "line", "secret_name", "secret_value", "platform", "scan_method"]
-  },
-  "views": {
-    "overview": {
-      "title": "Findings",
-      "description": "All leaked secrets across scanned repos.",
-      "transformation": {
-        "fields": [
-          "repo_url",
-          "file",
-          "line",
-          "secret_name",
-          "secret_value",
-          "paired",
-          "paired_with",
-          "permalink",
-          "platform",
-          "branch_ref",
-          "is_dangling",
-          "rule_id",
-          "commit_sha",
-          "is_test_key",
-          "author_name",
-          "author_email",
-          "commit_date"
-        ]
-      },
-      "display": {
-        "component": "table",
-        "properties": {
-          "repo_url":     {"label": "Repo", "format": "link"},
-          "file":         {"label": "File"},
-          "line":         {"label": "Line"},
-          "secret_name":  {"label": "Var name"},
-          "secret_value": {"label": "Secret value"},
-          "paired":       {"label": "Paired?"},
-          "paired_with":  {"label": "Paired component"},
-          "permalink":    {"label": "Open in GitHub", "format": "link"},
-          "platform":     {"label": "Platform"},
-          "branch_ref":   {"label": "Ref"},
-          "is_dangling":  {"label": "Dangling?"},
-          "rule_id":      {"label": "Rule"},
-          "commit_sha":    {"label": "Commit"},
-          "is_test_key":   {"label": "Test key?"},
-          "author_name":   {"label": "Author"},
-          "author_email":  {"label": "Author email"},
-          "commit_date":   {"label": "Commit date"}
-        }
-      }
     }
-  }
 }
