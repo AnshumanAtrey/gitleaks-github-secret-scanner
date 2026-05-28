@@ -1,0 +1,15 @@
+# RSA / OpenSSH / PGP private key blocks — single-string secret
+[service]
+id = "rsa-private-key"
+display_name = "Private key (RSA / OpenSSH / PGP / EC)"
+auth_class = "single"
+search_keywords = ["private", "BEGIN PRIVATE KEY", "BEGIN RSA"]
+
+[[patterns]]
+name = "private-key-block"
+component = "secret"
+regex = '''-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY( BLOCK)?-----[\s\S]+?-----END (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY( BLOCK)?-----'''
+keywords = ["BEGIN", "PRIVATE KEY"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''', '''(?i)test_keys?\.(?:pem|key)$''']

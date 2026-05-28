@@ -1,0 +1,48 @@
+# Stripe — class C (publishable is public, secret is private)
+[service]
+id = "stripe"
+display_name = "Stripe"
+auth_class = "pub_priv"
+search_keywords = ["stripe", "sk_live_", "rk_live_", "whsec_"]
+
+[[patterns]]
+name = "stripe-secret-key"
+component = "secret"
+regex = '''\bsk_(?:live|test)_[0-9a-zA-Z]{24,}\b'''
+keywords = ["sk_live_", "sk_test_"]
+
+[[patterns]]
+name = "stripe-restricted-key"
+component = "secret"
+regex = '''\brk_(?:live|test)_[0-9a-zA-Z]{24,}\b'''
+keywords = ["rk_live_", "rk_test_"]
+
+[[patterns]]
+name = "stripe-webhook-secret"
+component = "secret"
+regex = '''\bwhsec_[A-Za-z0-9]{32,}\b'''
+keywords = ["whsec_"]
+
+[[patterns]]
+name = "stripe-publishable-key"
+component = "id"
+regex = '''\bpk_(?:live|test)_[0-9a-zA-Z]{24,}\b'''
+keywords = ["pk_live_", "pk_test_"]
+
+[[testkey_patterns]]
+name = "stripe-test-secret"
+regex = '''\bsk_test_[0-9a-zA-Z]{24,}\b'''
+
+[[testkey_patterns]]
+name = "stripe-test-pub"
+regex = '''\bpk_test_[0-9a-zA-Z]{24,}\b'''
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+match_regexes = [
+  '''(sk|pk|rk)_(?:live|test)_(0+|xxx+|YOUR|abc+)'''
+]

@@ -1,0 +1,22 @@
+# Generic Google Cloud API key (AIzaSy*) — single-string.
+# Catches Maps, Places, YouTube Data API, Translate, Speech, etc. NOT Gemini-specific
+# (use gemini.toml for Gemini context-aware detection).
+[service]
+id = "gcp-api-key"
+display_name = "Google Cloud API key (generic)"
+auth_class = "single"
+search_keywords = ["google", "GOOGLE_API_KEY", "GCP_API_KEY", "AIzaSy"]
+
+[[patterns]]
+name = "gcp-api-key"
+component = "secret"
+regex = '''\bAIzaSy[A-Za-z0-9_-]{33}\b'''
+keywords = ["AIzaSy"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''',
+  '''(^|/)firebase-messaging-sw\.js$''',  # Firebase web SDK keys are public by design
+]
+match_regexes = ['''AIzaSy(?:XXXX+|YOUR_API_KEY|EXAMPLE)''']

@@ -1,0 +1,16 @@
+# MongoDB connection URI with embedded credentials
+[service]
+id = "mongodb-uri"
+display_name = "MongoDB connection URI"
+auth_class = "single"
+search_keywords = ["mongodb", "MONGO_URI", "MONGODB_URI", "MONGO_URL"]
+
+[[patterns]]
+name = "mongodb-connection-string"
+component = "secret"
+regex = '''mongodb(?:\+srv)?://[^\s:'"<>]+:[^\s:@'"<>]+@[^\s/'"<>]+(?:/[^\s'"<>]*)?'''
+keywords = ["mongodb://", "mongodb+srv://"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''mongodb(?:\+srv)?://(?:user|username|root):(?:pass|password|YOUR|XXXX)@''']

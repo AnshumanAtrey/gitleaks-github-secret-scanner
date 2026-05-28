@@ -1,0 +1,21 @@
+# Bitcoin Private Key — WIF (Wallet Import Format) mainnet keys
+[service]
+id = "bitcoin-private-key"
+display_name = "Bitcoin Private Key (WIF format)"
+auth_class = "single"
+search_keywords = ["bitcoin", "bitcoinjs", "BITCOIN_PRIVATE_KEY", "WIF"]
+
+# Mainnet WIF: starts with 5 (uncompressed, 51 chars total) or K/L (compressed, 52 chars)
+[[patterns]]
+name = "bitcoin-wif-mainnet"
+component = "secret"
+regex = '''\b(5[1-9A-HJ-NP-Za-km-z]{50}|[KL][1-9A-HJ-NP-Za-km-z]{51})\b'''
+secret_group = 1
+keywords = ["bitcoin", "wif"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]

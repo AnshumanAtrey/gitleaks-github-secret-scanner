@@ -1,0 +1,30 @@
+# AWS — paired (access_key_id + secret_access_key)
+[service]
+id = "aws"
+display_name = "AWS"
+auth_class = "paired"
+search_keywords = ["aws", "AKIA", "amazonaws"]
+
+[[patterns]]
+name = "aws-access-key-id"
+component = "id"
+regex = '''\b(?:AKIA|ASIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA)[A-Z0-9]{16}\b'''
+keywords = ["AKIA", "ASIA"]
+
+[[patterns]]
+name = "aws-secret-access-key"
+component = "secret"
+regex = '''(?i)aws[_-]?(secret[_-]?access[_-]?key|secret)\s*[:=]\s*['"]?([A-Za-z0-9/+=]{40})['"]?'''
+secret_group = 2
+keywords = ["aws"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''',
+  '''(^|/)\.aws/credentials\.example''',
+]
+match_regexes = [
+  '''AKIA(IOSFODNN7EXAMPLE|EXAMPLE|XXXX+|0+)''',
+  '''wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'''
+]

@@ -1,0 +1,33 @@
+# Cashfree Payments — paired auth (x-client-id + x-client-secret HTTP headers)
+[service]
+id = "cashfree"
+display_name = "Cashfree Payments"
+auth_class = "paired"
+search_keywords = ["cashfree", "x-client-id", "CASHFREE_APP_ID", "CASHFREE_CLIENT_ID", "x_client_id"]
+
+[[patterns]]
+name = "cashfree-app-id"
+component = "id"
+regex = '''(?i)(?:cashfree|cf|x[_-]client)[_-]?(?:app|client)?[_-]?id['"]?[ \t]*[:=][ \t]*['"]?((?:test|prod)?[A-Za-z0-9]{12,64})['"]?'''
+secret_group = 1
+keywords = ["cashfree", "x-client-id", "x_client_id"]
+
+[[patterns]]
+name = "cashfree-secret-key"
+component = "secret"
+regex = '''(?i)(?:cashfree|cf|x[_-]client)[_-]?(?:client[_-]?)?(?:secret(?:[_-]?key)?|key|api[_-]?secret)['"]?[ \t]*[:=][ \t]*['"]?(cfsk_(?:ma_)?(?:test|prod)_[A-Za-z0-9_\-]{16,124}|(?:test|prod)?[A-Za-z0-9]{20,64})['"]?'''
+secret_group = 1
+keywords = ["cashfree", "x-client-secret", "x_client_secret"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+match_regexes = ['''(?i)(?:YOUR|XXXX|TEST123|EXAMPLE|PLACEHOLDER|YOUR_APP_ID|YOUR_SECRET)''']
+# Reject obvious React/JS code identifiers that look like Cashfree IDs.
+secret_regexes = [
+  '''^client(?:ID|Id|Secret)?Controller$''',
+  '''^[a-z][A-Za-z]*Controller$''',
+]

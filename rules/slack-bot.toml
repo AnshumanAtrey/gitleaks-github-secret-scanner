@@ -1,0 +1,33 @@
+# Slack bot/user tokens — single-string auth
+[service]
+id = "slack-bot"
+display_name = "Slack bot/user token"
+auth_class = "single"
+search_keywords = ["slack", "SLACK_BOT_TOKEN", "SLACK_TOKEN"]
+
+[[patterns]]
+name = "slack-bot-token"
+component = "secret"
+regex = '''\bxoxb-\d{10,13}-\d{10,13}-[A-Za-z0-9]{24,34}\b'''
+keywords = ["xoxb-"]
+
+[[patterns]]
+name = "slack-user-token"
+component = "secret"
+regex = '''\bxoxp-\d{10,13}-\d{10,13}-\d{10,13}-[a-f0-9]{32}\b'''
+keywords = ["xoxp-"]
+
+[[patterns]]
+name = "slack-app-token"
+component = "secret"
+regex = '''\bxapp-\d-[A-Z0-9]+-\d+-[a-f0-9]{64}\b'''
+keywords = ["xapp-"]
+
+[[patterns]]
+name = "slack-workflow-token"
+component = "secret"
+regex = '''\bxoxw-\d{10,13}-\d{10,13}-[A-Za-z0-9]{24,34}\b'''
+keywords = ["xoxw-"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']

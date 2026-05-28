@@ -1,0 +1,29 @@
+# Twilio — paired auth (AccountSid + AuthToken)
+[service]
+id = "twilio"
+display_name = "Twilio"
+auth_class = "paired"
+search_keywords = ["twilio", "TWILIO_AUTH_TOKEN", "TWILIO_ACCOUNT_SID"]
+
+[[patterns]]
+name = "twilio-account-sid"
+component = "id"
+regex = '''\bAC[a-f0-9]{32}\b'''
+keywords = ["AC"]
+
+[[patterns]]
+name = "twilio-auth-token"
+component = "secret"
+regex = '''(?i)twilio[_-]?(auth[_-]?token|secret)\s*[:=]\s*['"]?([a-f0-9]{32})['"]?'''
+secret_group = 2
+keywords = ["twilio"]
+
+[[patterns]]
+name = "twilio-api-key-sid"
+component = "id"
+regex = '''\bSK[a-f0-9]{32}\b'''
+keywords = ["SK"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''(?:AC|SK)0{32}''']

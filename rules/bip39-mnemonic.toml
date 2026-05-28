@@ -1,0 +1,37 @@
+# BIP39 Mnemonic — wallet seed phrases (12 or 24 lowercase words)
+# Used by MetaMask, Phantom, Trust Wallet, Ledger, Trezor, and most HD wallets.
+[service]
+id = "bip39-mnemonic"
+display_name = "BIP39 Mnemonic / Wallet Seed Phrase"
+auth_class = "single"
+search_keywords = ["mnemonic", "seed_phrase", "MNEMONIC", "SEED_PHRASE", "bip39", "recovery"]
+
+# 12-word mnemonic anchored on variable name
+[[patterns]]
+name = "bip39-mnemonic-12"
+component = "secret"
+regex = '''(?i)(?:mnemonic|seed[_-]?phrase|wallet[_-]?phrase|recovery[_-]?phrase|secret[_-]?phrase)['"]?[ \t]*[:=][ \t]*['"]?((?:[a-z]{3,8}[ \t]+){11}[a-z]{3,8})['"]?'''
+secret_group = 1
+keywords = ["mnemonic", "seed"]
+
+# 24-word mnemonic
+[[patterns]]
+name = "bip39-mnemonic-24"
+component = "secret"
+regex = '''(?i)(?:mnemonic|seed[_-]?phrase|wallet[_-]?phrase|recovery[_-]?phrase|secret[_-]?phrase)['"]?[ \t]*[:=][ \t]*['"]?((?:[a-z]{3,8}[ \t]+){23}[a-z]{3,8})['"]?'''
+secret_group = 1
+keywords = ["mnemonic", "seed"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+# Block famous public test mnemonics — they appear in every wallet tutorial.
+match_regexes = [
+  '''abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about''',
+  '''test test test test test test test test test test test junk''',
+  '''legal winner thank year wave sausage worth useful legal winner thank yellow''',
+  '''letter advice cage absurd amount doctor acoustic avoid letter advice cage above''',
+]

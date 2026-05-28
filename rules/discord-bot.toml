@@ -1,0 +1,18 @@
+# Discord bot token — single-string auth
+[service]
+id = "discord-bot"
+display_name = "Discord bot token"
+auth_class = "single"
+search_keywords = ["discord", "DISCORD_TOKEN", "DISCORD_BOT_TOKEN"]
+
+# Bot tokens: 3 dot-separated base64 parts. Lengths vary; the first part is
+# the bot user id encoded, second is a timestamp, third is the HMAC.
+[[patterns]]
+name = "discord-bot-token"
+component = "secret"
+regex = '''\b[MN][\w-]{23,30}\.[\w-]{6,8}\.[\w-]{27,40}\b'''
+keywords = ["discord"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''(?:XXXX|YOUR_TOKEN|EXAMPLE)''']

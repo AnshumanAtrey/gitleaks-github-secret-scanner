@@ -1,0 +1,31 @@
+# Google Gemini / Generative AI — single-string auth (AIzaSy*)
+# NOTE: same pattern as generic GCP API key (Maps, Firebase web SDK).
+# Context (env var name, file) distinguishes Gemini specifically.
+[service]
+id = "gemini"
+display_name = "Google Gemini"
+auth_class = "single"
+search_keywords = ["gemini", "GEMINI_API_KEY", "GOOGLE_API_KEY", "generativelanguage"]
+
+[[patterns]]
+name = "gemini-api-key"
+component = "secret"
+regex = '''(?i)(gemini|google_generative|generativelanguage)[^\n=:]{0,40}[:=]\s*['"]?(AIzaSy[A-Za-z0-9_-]{33})['"]?'''
+secret_group = 2
+keywords = ["AIzaSy"]
+
+[[patterns]]
+name = "gemini-api-key-bare"
+component = "secret"
+regex = '''\bAIzaSy[A-Za-z0-9_-]{33}\b'''
+keywords = ["AIzaSy"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''',
+  '''(^|/)firebase-messaging-sw\.js$''',
+]
+match_regexes = [
+  '''AIzaSy(XXXX+|YOUR_API_KEY|EXAMPLE)'''
+]

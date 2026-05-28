@@ -1,0 +1,16 @@
+# Trigger.dev — single-string auth (tr_dev_/tr_prod_)
+[service]
+id = "trigger-dev"
+display_name = "Trigger.dev"
+auth_class = "single"
+search_keywords = ["trigger.dev", "TRIGGER_API_KEY", "TRIGGER_SECRET_KEY"]
+
+[[patterns]]
+name = "trigger-dev-secret-key"
+component = "secret"
+regex = '''\btr_(?:dev|prod|stg)_[A-Za-z0-9]{40,64}\b'''
+keywords = ["tr_dev_", "tr_prod_", "tr_stg_"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''tr_(?:dev|prod|stg)_(?:XXXX+|YOUR|0+)''']

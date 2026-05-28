@@ -1,0 +1,38 @@
+# PayU (India) — paired auth (merchant_key + merchant_salt + optional auth_header for WeBackOps)
+[service]
+id = "payu"
+display_name = "PayU (India)"
+auth_class = "paired"
+search_keywords = ["payu", "PAYU_MERCHANT_KEY", "PAYU_SALT", "PAYU_AUTH_HEADER"]
+
+[[patterns]]
+name = "payu-merchant-key"
+component = "id"
+regex = '''(?i)payu[_-]?(?:merchant[_-]?)?key['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9]{6,16})['"]?'''
+secret_group = 1
+keywords = ["payu"]
+
+[[patterns]]
+name = "payu-salt"
+component = "secret"
+regex = '''(?i)payu[_-]?(?:merchant[_-]?)?(?:salt|secret)['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9]{8,40})['"]?'''
+secret_group = 1
+keywords = ["payu"]
+
+[[patterns]]
+name = "payu-auth-header"
+component = "secret"
+regex = '''(?i)payu[_-]?auth(?:[_-]?header|[_-]?token)?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-\.\+/=]{20,256})['"]?'''
+secret_group = 1
+keywords = ["payu"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''(?:YOUR|XXXX|gtKFFx|eCwWELxi)''']
+# Reject when the captured value is itself a PayU-related code identifier
+# (camelCase variable name like payUMode/payUKey/payUSalt) or generic
+# WordPress sanitize helpers — these are not credentials.
+secret_regexes = [
+  '''^payU(?:Mode|Key|Salt|VerifyURL|Test|Prod|TestKey|ProdKey)$''',
+  '''^sanitize(?:_text_field|_email)?$''',
+]

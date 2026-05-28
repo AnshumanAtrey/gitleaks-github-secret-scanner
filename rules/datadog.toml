@@ -1,0 +1,24 @@
+# Datadog API key — single-string auth (32-char hex)
+[service]
+id = "datadog"
+display_name = "Datadog"
+auth_class = "single"
+search_keywords = ["datadog", "DD_API_KEY", "DATADOG_API_KEY"]
+
+[[patterns]]
+name = "datadog-api-key"
+component = "secret"
+regex = '''(?i)(?:datadog|dd)[_-]?(?:api[_-]?)?key\s*[:=]\s*['"]?([a-f0-9]{32})['"]?'''
+secret_group = 1
+keywords = ["datadog", "dd_api"]
+
+[[patterns]]
+name = "datadog-app-key"
+component = "secret"
+regex = '''(?i)(?:datadog|dd)[_-]?app(?:lication)?[_-]?key\s*[:=]\s*['"]?([a-f0-9]{40})['"]?'''
+secret_group = 1
+keywords = ["datadog", "dd_app"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''[a-f0-9]*0{16,}''']

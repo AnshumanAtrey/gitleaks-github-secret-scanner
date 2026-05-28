@@ -1,0 +1,46 @@
+# GitHub Personal Access Token — single-string auth
+[service]
+id = "github-pat"
+display_name = "GitHub Personal Access Token"
+auth_class = "single"
+search_keywords = ["github", "GITHUB_TOKEN", "GH_TOKEN"]
+
+[[patterns]]
+name = "github-classic-pat"
+component = "secret"
+regex = '''\bghp_[A-Za-z0-9]{36}\b'''
+keywords = ["ghp_"]
+
+[[patterns]]
+name = "github-fine-grained-pat"
+component = "secret"
+regex = '''\bgithub_pat_[A-Za-z0-9_]{82}\b'''
+keywords = ["github_pat_"]
+
+[[patterns]]
+name = "github-oauth-token"
+component = "secret"
+regex = '''\bgho_[A-Za-z0-9]{36}\b'''
+keywords = ["gho_"]
+
+[[patterns]]
+name = "github-user-token"
+component = "secret"
+regex = '''\bghu_[A-Za-z0-9]{36}\b'''
+keywords = ["ghu_"]
+
+[[patterns]]
+name = "github-server-token"
+component = "secret"
+regex = '''\bghs_[A-Za-z0-9]{36}\b'''
+keywords = ["ghs_"]
+
+[[patterns]]
+name = "github-refresh-token"
+component = "secret"
+regex = '''\bghr_[A-Za-z0-9]{36}\b'''
+keywords = ["ghr_"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''gh[psorvu]_(?:0+|XXXX+|YOUR|YOUR_TOKEN)''']

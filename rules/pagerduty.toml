@@ -1,0 +1,23 @@
+# PagerDuty — single-string auth (Events v2 routing key or REST API token)
+[service]
+id = "pagerduty"
+display_name = "PagerDuty"
+auth_class = "single"
+search_keywords = ["pagerduty", "PAGERDUTY_TOKEN"]
+
+[[patterns]]
+name = "pagerduty-api-token"
+component = "secret"
+regex = '''(?i)pagerduty[^\n=:]{0,40}[:=]\s*['"]?([uy][_a-zA-Z0-9+/=-]{20,32})['"]?'''
+secret_group = 1
+keywords = ["pagerduty"]
+
+[[patterns]]
+name = "pagerduty-routing-key"
+component = "secret"
+regex = '''(?i)pagerduty[^\n=:]{0,40}routing[^\n=:]{0,20}[:=]\s*['"]?([a-f0-9]{32})['"]?'''
+secret_group = 1
+keywords = ["pagerduty", "routing"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']

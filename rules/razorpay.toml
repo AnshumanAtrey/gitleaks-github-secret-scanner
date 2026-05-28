@@ -1,0 +1,37 @@
+# Razorpay — paired auth (key_id + key_secret via HTTP Basic Auth)
+[service]
+id = "razorpay"
+display_name = "Razorpay"
+auth_class = "paired"
+search_keywords = ["razorpay", "rzp_live_", "rzp_test_"]
+
+# Patterns merged into a generated gitleaks config at scan time.
+[[patterns]]
+name = "razorpay-key-id"
+component = "id"
+regex = '''\brzp_(?:live|test)_[A-Za-z0-9]{14}\b'''
+keywords = ["rzp_live_", "rzp_test_"]
+
+[[patterns]]
+name = "razorpay-key-secret"
+component = "secret"
+regex = '''(?i)razorpay[_-]?(api[_-]?)?(key[_-]?)?secret\s*[:=]\s*['"]?([A-Za-z0-9]{20,30})['"]?'''
+secret_group = 3
+keywords = ["razorpay"]
+
+# Public-by-design patterns to mark/skip
+[[testkey_patterns]]
+name = "razorpay-test-id"
+regex = '''\brzp_test_[A-Za-z0-9]{14}\b'''
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)\.next/''',
+  '''(^|/)__pycache__/''', '''(^|/)site-packages/''',
+  '''(^|/)razorpay-(python|node|php|java|ruby)-[\d\.]+/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+match_regexes = [
+  '''rzp_(?:live|test)_(?:1234567890abcd|0+|test|example|placeholder|xxxx|YOUR|YOURKEYHERE)'''
+]

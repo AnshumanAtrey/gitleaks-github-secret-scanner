@@ -1,0 +1,16 @@
+# SendGrid — single-string auth (SG.*)
+[service]
+id = "sendgrid"
+display_name = "SendGrid"
+auth_class = "single"
+search_keywords = ["sendgrid", "SENDGRID_API_KEY"]
+
+[[patterns]]
+name = "sendgrid-api-key"
+component = "secret"
+regex = '''\bSG\.[A-Za-z0-9_-]{20,24}\.[A-Za-z0-9_-]{39,50}\b'''
+keywords = ["SG."]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''SG\.(?:XXXX+|YOUR_KEY|YOUR_API_KEY)''']

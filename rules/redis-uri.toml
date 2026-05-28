@@ -1,0 +1,16 @@
+# Redis connection URI with embedded credentials
+[service]
+id = "redis-uri"
+display_name = "Redis connection URI"
+auth_class = "single"
+search_keywords = ["redis", "REDIS_URL", "REDIS_URI"]
+
+[[patterns]]
+name = "redis-connection-string"
+component = "secret"
+regex = '''rediss?://[^\s:'"<>]*:[^\s:@'"<>]+@[^\s'"<>]+'''
+keywords = ["redis://", "rediss://"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''rediss?://[^@]*:(?:YOUR|XXXX|password|pass)@(?:localhost|127\.0\.0\.1|redis)''']

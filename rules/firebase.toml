@@ -1,0 +1,34 @@
+# Firebase — pub+priv (web config is intentionally PUBLIC; admin SDK json is PRIVATE)
+[service]
+id = "firebase"
+display_name = "Firebase"
+auth_class = "pub_priv"
+search_keywords = ["firebase", "FIREBASE_API_KEY", "firebase-admin"]
+
+# Firebase web SDK API key (PUBLIC by design — same shape as gemini/maps AIzaSy*).
+# We match any AIzaSy* near 'firebase' context. The bare-pattern fallback below
+# catches cases where the key is inside a JS object literal (apiKey: '...').
+[[patterns]]
+name = "firebase-web-api-key-context"
+component = "id"
+regex = '''(?i)firebase[\s\S]{0,200}?(AIzaSy[A-Za-z0-9_-]{33})'''
+secret_group = 1
+keywords = ["firebase", "AIzaSy"]
+
+[[patterns]]
+name = "firebase-web-api-key-bare"
+component = "id"
+regex = '''\bAIzaSy[A-Za-z0-9_-]{33}\b'''
+keywords = ["AIzaSy"]
+
+# Firebase admin SDK private_key (REAL secret — found in service-account JSON files)
+[[patterns]]
+name = "firebase-admin-private-key"
+component = "secret"
+regex = '''"private_key"\s*:\s*"(-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----)'''
+secret_group = 1
+keywords = ["private_key", "BEGIN PRIVATE KEY"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)firebase-messaging-sw\.js$''']
+match_regexes = ['''AIzaSy(?:XXXX+|YOUR_API_KEY|EXAMPLE)''']

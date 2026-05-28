@@ -1,0 +1,38 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.DS_Store
+.idea/
+.vscode/
+
+# Apify local storage (contains scan inputs + outputs with real credentials)
+storage/
+apify_storage/
+
+# CRITICAL — any of these directories contain real leaked credentials harvested
+# during testing. Never commit, never push, never share.
+cloud-results-*/
+test-results-*/
+research/findings/*.json
+tests/findings/
+findings/
+*.findings.json
+
+# Local runner artifacts
+/tmp-scan-*
+run_indian_fintech_scan.sh
+
+# Local-only env / secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Test fixtures necessarily contain pattern-shaped synthetic values (AKIA*,
+# sk_live_*, etc.) for the detection regexes to validate against. They are
+# NOT real credentials, but they trigger GitHub's secret-scanning push protection.
+# Develop locally; CI runs them in a private test pipeline.
+tests/

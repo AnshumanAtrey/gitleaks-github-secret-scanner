@@ -1,0 +1,15 @@
+# Slack webhook URL — single-string (URL itself = the credential)
+[service]
+id = "slack-webhook"
+display_name = "Slack webhook URL"
+auth_class = "single"
+search_keywords = ["slack", "SLACK_WEBHOOK_URL", "hooks.slack.com"]
+
+[[patterns]]
+name = "slack-webhook-url"
+component = "secret"
+regex = '''\bhttps://hooks\.slack\.com/services/T[A-Z0-9]{8,12}/B[A-Z0-9]{8,12}/[A-Za-z0-9]{24}\b'''
+keywords = ["hooks.slack.com"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']

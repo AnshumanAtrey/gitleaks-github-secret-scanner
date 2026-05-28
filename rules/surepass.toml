@@ -1,0 +1,29 @@
+# Surepass — Bearer token KYC API
+[service]
+id = "surepass"
+display_name = "Surepass"
+auth_class = "single"
+search_keywords = ["surepass", "SUREPASS_API_KEY", "SUREPASS_TOKEN"]
+
+[[patterns]]
+name = "surepass-api-key"
+component = "secret"
+regex = '''(?i)surepass[_-]?(?:api[_-]?)?(?:key|token|auth)['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-\.]{20,512})['"]?'''
+secret_group = 1
+keywords = ["surepass"]
+
+# Bearer-token style: when SUREPASS_BEARER or related env var is set
+[[patterns]]
+name = "surepass-bearer"
+component = "secret"
+regex = '''(?i)surepass[_-]?bearer['"]?[ \t]*[:=][ \t]*['"]?(eyJ[A-Za-z0-9_\-\.]{20,512})['"]?'''
+secret_group = 1
+keywords = ["surepass"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+match_regexes = ['''(?i)(?:YOUR|XXXX|EXAMPLE|PLACEHOLDER|YOUR_TOKEN|YOUR_API_KEY)''']

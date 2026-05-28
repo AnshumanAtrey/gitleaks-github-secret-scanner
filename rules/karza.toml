@@ -1,0 +1,28 @@
+# Karza (now Perfios) — x-karza-key header for KYC verification
+[service]
+id = "karza"
+display_name = "Karza / Perfios"
+auth_class = "single"
+search_keywords = ["karza", "x-karza-key", "KARZA_API_KEY"]
+
+[[patterns]]
+name = "karza-api-key"
+component = "secret"
+regex = '''(?i)(?:x[_-])?karza[_-]?(?:api[_-]?)?key['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-]{20,128})['"]?'''
+secret_group = 1
+keywords = ["karza", "x-karza-key"]
+
+[[patterns]]
+name = "karza-token"
+component = "secret"
+regex = '''(?i)karza[_-]?(?:token|auth|secret)['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-\.]{20,256})['"]?'''
+secret_group = 1
+keywords = ["karza"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+match_regexes = ['''(?i)(?:YOUR|XXXX|EXAMPLE|PLACEHOLDER|YOUR_KARZA_KEY)''']

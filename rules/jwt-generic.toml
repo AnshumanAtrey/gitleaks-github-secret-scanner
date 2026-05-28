@@ -1,0 +1,17 @@
+# Generic JWT — single-string. May or may not be sensitive depending on what's inside.
+# We surface all of them; user can filter by inspecting the decoded payload (exp claim, etc.)
+[service]
+id = "jwt-generic"
+display_name = "Generic JWT"
+auth_class = "single"
+search_keywords = ["jwt", "JWT_SECRET", "ACCESS_TOKEN"]
+
+[[patterns]]
+name = "generic-jwt"
+component = "secret"
+regex = '''\beyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b'''
+keywords = ["eyJ"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''eyJ(?:hbGc|ZXJyb)0iOiJub25lIiwidHlwIjoiSldUIn0''']

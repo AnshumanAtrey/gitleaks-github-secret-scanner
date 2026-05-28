@@ -1,0 +1,16 @@
+# Anthropic Claude — single-string auth (sk-ant-api03-*)
+[service]
+id = "anthropic"
+display_name = "Anthropic Claude"
+auth_class = "single"
+search_keywords = ["anthropic", "ANTHROPIC_API_KEY", "claude_api"]
+
+[[patterns]]
+name = "anthropic-api-key"
+component = "secret"
+regex = '''\bsk-ant-(?:api03|api02|api01)-[A-Za-z0-9_-]{93,}\b'''
+keywords = ["sk-ant-"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''sk-ant-api0\d-(?:XXXX+|YOUR|0+)''']

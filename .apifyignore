@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.git/
+.gitignore
+research/
+tests/
+.DS_Store
+storage/
+apify_storage/

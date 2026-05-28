@@ -1,0 +1,35 @@
+# Decentro — paired auth (client_id + client_secret + module_secret)
+[service]
+id = "decentro"
+display_name = "Decentro"
+auth_class = "paired"
+search_keywords = ["decentro", "DECENTRO_CLIENT_ID", "DECENTRO_MODULE_SECRET"]
+
+[[patterns]]
+name = "decentro-client-id"
+component = "id"
+regex = '''(?i)decentro[_-]?client[_-]?id['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-]{8,64})['"]?'''
+secret_group = 1
+keywords = ["decentro"]
+
+[[patterns]]
+name = "decentro-client-secret"
+component = "secret"
+regex = '''(?i)decentro[_-]?client[_-]?secret['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-]{12,128})['"]?'''
+secret_group = 1
+keywords = ["decentro"]
+
+[[patterns]]
+name = "decentro-module-secret"
+component = "secret"
+regex = '''(?i)decentro[_-]?module[_-]?secret['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-]{12,128})['"]?'''
+secret_group = 1
+keywords = ["decentro"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+match_regexes = ['''(?i)(?:YOUR|XXXX|EXAMPLE|PLACEHOLDER|YOUR_CLIENT|YOUR_SECRET)''']

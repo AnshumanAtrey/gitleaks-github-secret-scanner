@@ -1,0 +1,29 @@
+# Solana Private Key — JSON-array keypair (Phantom/Sollet export) or base58 string
+[service]
+id = "solana-private-key"
+display_name = "Solana Private Key / Keypair"
+auth_class = "single"
+search_keywords = ["@solana", "solana", "Keypair", "anchor-lang", "SOLANA_PRIVATE_KEY"]
+
+# JSON array of 64 ints (the standard exported keypair format)
+[[patterns]]
+name = "solana-keypair-json"
+component = "secret"
+regex = '''(\[\s*(?:\d{1,3}\s*,\s*){63}\d{1,3}\s*\])'''
+secret_group = 1
+keywords = ["Keypair", "@solana", "solana"]
+
+# Base58 secret key (87-88 chars), anchored on variable name
+[[patterns]]
+name = "solana-private-key-base58"
+component = "secret"
+regex = '''(?i)solana[_-]?(?:private[_-]?key|secret[_-]?key|keypair)['"]?[ \t]*[:=][ \t]*['"]?([1-9A-HJ-NP-Za-km-z]{87,88})['"]?'''
+secret_group = 1
+keywords = ["solana"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]

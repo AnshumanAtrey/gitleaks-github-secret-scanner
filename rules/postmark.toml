@@ -1,0 +1,17 @@
+# Postmark — single-string auth (UUID-format server token)
+[service]
+id = "postmark"
+display_name = "Postmark"
+auth_class = "single"
+search_keywords = ["postmark", "POSTMARK_API_TOKEN", "POSTMARK_SERVER_TOKEN"]
+
+[[patterns]]
+name = "postmark-server-token"
+component = "secret"
+regex = '''(?i)postmark[^\n=:]{0,40}[:=]\s*['"]?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})['"]?'''
+secret_group = 1
+keywords = ["postmark"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''00000000-0000-0000-0000-000000000000''']

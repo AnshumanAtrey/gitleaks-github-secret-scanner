@@ -1,0 +1,21 @@
+# Attestr — HTTP Basic Auth opaque token
+[service]
+id = "attestr"
+display_name = "Attestr"
+auth_class = "single"
+search_keywords = ["attestr", "ATTESTR_API_KEY", "ATTESTR_AUTH"]
+
+[[patterns]]
+name = "attestr-api-key"
+component = "secret"
+regex = '''(?i)attestr[_-]?(?:api[_-]?)?(?:key|token|auth)['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-\.\+/=]{20,512})['"]?'''
+secret_group = 1
+keywords = ["attestr"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+match_regexes = ['''(?i)(?:YOUR|XXXX|EXAMPLE|PLACEHOLDER|YOUR_AUTH_TOKEN|YOUR_API_KEY)''']

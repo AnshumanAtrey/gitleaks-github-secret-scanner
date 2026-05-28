@@ -1,0 +1,36 @@
+# EVM Private Key — Ethereum, Polygon, BSC, Avalanche, Tron, Arbitrum, etc.
+# Uses keyword prefilter + variable-name context to avoid SHA256/hash FPs.
+[service]
+id = "evm-private-key"
+display_name = "EVM Private Key (Ethereum / Polygon / BSC / Tron / etc.)"
+auth_class = "single"
+search_keywords = ["PRIVATE_KEY", "DEPLOYER_KEY", "WALLET_PRIVATE_KEY", "hardhat", "foundry"]
+
+[[patterns]]
+name = "evm-private-key-raw"
+component = "secret"
+regex = '''(?i)(?:private[_-]?key|deployer[_-]?key|owner[_-]?key|wallet[_-]?(?:private[_-]?)?key|signer[_-]?key|anvil[_-]?key|hardhat[_-]?(?:private[_-]?)?key|test[_-]?wallet)(?:[_-][A-Za-z0-9]+)*['"]?[ \t]*[:=][ \t]*['"]?(?:0x)?([A-Fa-f0-9]{64})['"]?'''
+secret_group = 1
+keywords = ["PRIVATE_KEY", "DEPLOYER_KEY", "WALLET_KEY"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+# Block well-known Hardhat/Anvil/Foundry default test keys (public, harmless)
+# These are documented in every web3 tutorial — finding them is noise.
+match_regexes = [
+  '''ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80''',
+  '''59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d''',
+  '''5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a''',
+  '''7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6''',
+  '''47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a''',
+]
+# Reject all-zeros / all-fs trivial keys
+secret_regexes = [
+  '''^0{64}$''',
+  '''^[fF]{64}$''',
+  '''^(?:dead|beef|cafe|babe|0123456789){4,}$''',
+]

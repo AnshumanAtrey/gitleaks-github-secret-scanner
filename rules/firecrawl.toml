@@ -1,0 +1,16 @@
+# Firecrawl — single-string auth (fc-*)
+[service]
+id = "firecrawl"
+display_name = "Firecrawl"
+auth_class = "single"
+search_keywords = ["firecrawl", "FIRECRAWL_API_KEY"]
+
+[[patterns]]
+name = "firecrawl-api-key"
+component = "secret"
+regex = '''\bfc-[A-Za-z0-9]{32,}\b'''
+keywords = ["fc-"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''fc-(?:XXXX+|YOUR|0+)''']

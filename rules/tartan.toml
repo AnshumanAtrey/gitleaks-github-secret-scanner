@@ -1,0 +1,21 @@
+# Tartan (tartanhq.com) — KYC API; format undocumented publicly so we anchor on the variable name
+[service]
+id = "tartan"
+display_name = "Tartan"
+auth_class = "single"
+search_keywords = ["tartan", "TARTAN_API_KEY", "tartanhq"]
+
+[[patterns]]
+name = "tartan-api-key"
+component = "secret"
+regex = '''(?i)tartan[_-]?(?:hq[_-]?)?(?:api[_-]?)?(?:key|token|auth|secret)['"]?[ \t]*[:=][ \t]*['"]?([A-Za-z0-9_\-\.]{16,512})['"]?'''
+secret_group = 1
+keywords = ["tartan"]
+
+[allowlists]
+paths = [
+  '''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''',
+  '''(^|/)dist/''', '''(^|/)build/''', '''(^|/)__pycache__/''',
+  '''package-lock\.json$''', '''yarn\.lock$''', '''pnpm-lock\.yaml$''',
+]
+match_regexes = ['''(?i)(?:YOUR|XXXX|EXAMPLE|PLACEHOLDER|YOUR_TARTAN)''']

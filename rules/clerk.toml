@@ -1,0 +1,30 @@
+# Clerk — pub+priv (publishable_key public, secret_key private)
+[service]
+id = "clerk"
+display_name = "Clerk"
+auth_class = "pub_priv"
+search_keywords = ["clerk", "CLERK_SECRET_KEY", "CLERK_PUBLISHABLE_KEY"]
+
+[[patterns]]
+name = "clerk-secret-key"
+component = "secret"
+regex = '''\bsk_(?:live|test)_[A-Za-z0-9]{40,}\b'''
+keywords = ["sk_live_", "sk_test_"]
+
+[[patterns]]
+name = "clerk-publishable-key"
+component = "id"
+regex = '''\bpk_(?:live|test)_[A-Za-z0-9]{40,}\b'''
+keywords = ["pk_live_", "pk_test_"]
+
+[[testkey_patterns]]
+name = "clerk-test-pub"
+regex = '''\bpk_test_[A-Za-z0-9]{40,}\b'''
+
+[[testkey_patterns]]
+name = "clerk-test-secret"
+regex = '''\bsk_test_[A-Za-z0-9]{40,}\b'''
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''(?:sk|pk)_(?:live|test)_(?:XXXX+|YOUR|0+)''']

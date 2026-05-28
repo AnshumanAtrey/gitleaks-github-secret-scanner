@@ -1,0 +1,30 @@
+# Supabase — pub+priv (anon JWT is public; service_role JWT is private)
+[service]
+id = "supabase"
+display_name = "Supabase"
+auth_class = "pub_priv"
+search_keywords = ["supabase", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_ANON_KEY"]
+
+# Supabase JWTs always have iss=supabase in the payload. We can't easily decode
+# the JWT in regex, but we CAN distinguish service_role from anon by the env var
+# name in the surrounding context.
+[[patterns]]
+name = "supabase-service-role-jwt"
+component = "secret"
+regex = '''(?i)(?:supabase[_-]?service[_-]?role[_-]?(?:key)?|SUPABASE_SERVICE_KEY)\s*[:=]\s*['"]?(eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,})['"]?'''
+secret_group = 1
+keywords = ["supabase"]
+
+[[patterns]]
+name = "supabase-anon-jwt"
+component = "id"
+regex = '''(?i)(?:supabase[_-]?anon[_-]?(?:key)?|NEXT_PUBLIC_SUPABASE_ANON_KEY)\s*[:=]\s*['"]?(eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,})['"]?'''
+secret_group = 1
+keywords = ["supabase"]
+
+[[testkey_patterns]]
+name = "supabase-anon-public"
+regex = '''(?i)NEXT_PUBLIC_SUPABASE_ANON_KEY\s*[:=]\s*['"]?eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}'''
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']

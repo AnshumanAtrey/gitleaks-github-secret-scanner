@@ -1,0 +1,16 @@
+# Postgres connection URI with embedded credentials
+[service]
+id = "postgres-uri"
+display_name = "Postgres connection URI"
+auth_class = "single"
+search_keywords = ["postgres", "DATABASE_URL", "POSTGRES_URI", "POSTGRESQL_URL"]
+
+[[patterns]]
+name = "postgres-connection-string"
+component = "secret"
+regex = '''postgres(?:ql)?://[^\s:'"<>]+:[^\s:@'"<>]+@[^\s/'"<>]+(?:/[^\s'"<>]*)?'''
+keywords = ["postgres://", "postgresql://"]
+
+[allowlists]
+paths = ['''(^|/)node_modules/''', '''(^|/)vendor/''', '''(^|/)\.git/''', '''(^|/)dist/''', '''(^|/)build/''']
+match_regexes = ['''postgres(?:ql)?://(?:postgres|user|admin):(?:postgres|pass|password|YOUR|XXXX)@(?:localhost|127\.0\.0\.1|db|postgres)''']
