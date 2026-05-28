@@ -1,18 +1,18 @@
-# Gitleaks Cloud — GitHub API Key Hunter & Secret Scanner
+# Gitleaks Cloud - GitHub API Key Hunter & Secret Scanner
 
-Cloud-hosted [gitleaks](https://github.com/gitleaks/gitleaks) (18.7k★) for hunting leaked API keys, wallet private keys, and credentials anywhere on GitHub — including **full git history**, **PR branches**, and **dangling commits**.
+Cloud-hosted [gitleaks](https://github.com/gitleaks/gitleaks) (18.7k★) for hunting leaked API keys, wallet private keys, and credentials anywhere on GitHub - including **full git history**, **PR branches**, and **dangling commits**.
 
 40 hand-tuned detectors (Razorpay, Stripe, AWS, OpenAI, Anthropic, EVM/Ethereum/Tron private keys, BIP39 mnemonics, Cashfree, PayU, Surepass, Decentro, Karza/Perfios, Attestr, Tartan + 25 more). Smart key+secret pairing for vendors that need both. Three search modes: known platform, keyword (auto-expanded variants), or custom regex.
 
-Available as an [Apify Actor](https://apify.com/anshumanatrey/gitleaks-github-secret-scanner) — no install, no CLI, runs in cloud, flat JSON output. $0.01 + $0.02 per repo scanned.
+Available as an [Apify Actor](https://apify.com/anshumanatrey/gitleaks-github-secret-scanner) - no install, no CLI, runs in cloud, flat JSON output. $0.01 + $0.02 per repo scanned.
 
 ## What's different vs running gitleaks locally
 
 | | Local gitleaks CLI | This actor |
 |---|---|---|
-| Setup | Install Go + binary + write TOML | None — paste a JSON input |
+| Setup | Install Go + binary + write TOML | None - paste a JSON input |
 | Scope | One repo at a time | All of GitHub (Code Search), a user/org, or a single repo |
-| Pairing | None — flat findings | Pairs key_id with key_secret in same file (Razorpay, AWS, Twilio, PayU, Decentro, Cashfree, Stripe, Clerk) |
+| Pairing | None - flat findings | Pairs key_id with key_secret in same file (Razorpay, AWS, Twilio, PayU, Decentro, Cashfree, Stripe, Clerk) |
 | PR refs | Default-branch only | Default + `refs/pull/*/head` automatically |
 | All branches | Default-branch only | `--no-single-branch` by default |
 | Dangling commits | Manual `git fsck` | Built-in opt-in scan |
@@ -25,8 +25,8 @@ Available as an [Apify Actor](https://apify.com/anshumanatrey/gitleaks-github-se
 | Mode | When to use | Input |
 |---|---|---|
 | **Platform** | Hunting keys for a known service (40 supported) | Pick from dropdown |
-| **Keyword** | Service we don't have a hand-tuned rule for | Type the word — actor auto-expands variants (UPPER, snake_case, camelCase, dot-notation) |
-| **Custom regex** | Power user with a specific pattern | Paste regex — applied across all of GitHub |
+| **Keyword** | Service we don't have a hand-tuned rule for | Type the word - actor auto-expands variants (UPPER, snake_case, camelCase, dot-notation) |
+| **Custom regex** | Power user with a specific pattern | Paste regex - applied across all of GitHub |
 
 ## Supported services (40)
 
@@ -50,33 +50,33 @@ Available as an [Apify Actor](https://apify.com/anshumanatrey/gitleaks-github-se
 
 | Field | What it does |
 |---|---|
-| `search_for` | `platform` / `keyword` / `regex` — determines which detector type runs |
+| `search_for` | `platform` / `keyword` / `regex` - determines which detector type runs |
 | `platform` | Dropdown of 40 services (when `search_for=platform`) |
 | `platform_custom` | Free-text service name (when `platform=custom`) |
-| `additional_platforms` | Multi-select — scan multiple services in one run |
+| `additional_platforms` | Multi-select - scan multiple services in one run |
 | `keyword` | One word; actor auto-generates UPPER, snake_case, camelCase variants |
 | `regex_pattern` | Your own regex (power-user mode) |
 | `scope` | `all_github` / `user_or_org` / `single_repo` |
 | `target` | Username / org / repo URL (when scope is not `all_github`) |
-| `github_pat` | Recommended — enables Code Search precision + private repos. Generate at [github.com/settings/tokens](https://github.com/settings/tokens) |
+| `github_pat` | Recommended - enables Code Search precision + private repos. Generate at [github.com/settings/tokens](https://github.com/settings/tokens) |
 | `max_results` | Cap on unique repos scanned (1–1000, default 100) |
 
-### Advanced — scan depth & filters (all default sensible)
+### Advanced - scan depth & filters (all default sensible)
 
 | Field | Default | What it does |
 |---|---|---|
-| `include_pr_refs` | **on** | Fetches `refs/pull/*/head` after clone — catches PR-squashed secrets |
-| `include_all_branches` | **on** | `git clone --no-single-branch` — scans every branch |
-| `include_submodules` | off | `--recurse-submodules` — submodules can hide nested `.env` files |
-| `include_dangling_objects` | off | `git fsck --dangling` — catches rebased-away history |
-| `commit_since` / `commit_until` | — | Date-range filter on commits (not repos) |
-| `commit_author` | — | Author regex (e.g. `.*@example\.com`) |
-| `commit_message_grep` | — | Message regex (e.g. `wip\|temp\|hack` to find sloppy commits) |
-| `commit_introduced_string` | — | Pickaxe `-S` — find only commits that *introduced* a specific string. Massive speedup. |
+| `include_pr_refs` | **on** | Fetches `refs/pull/*/head` after clone - catches PR-squashed secrets |
+| `include_all_branches` | **on** | `git clone --no-single-branch` - scans every branch |
+| `include_submodules` | off | `--recurse-submodules` - submodules can hide nested `.env` files |
+| `include_dangling_objects` | off | `git fsck --dangling` - catches rebased-away history |
+| `commit_since` / `commit_until` | - | Date-range filter on commits (not repos) |
+| `commit_author` | - | Author regex (e.g. `.*@example\.com`) |
+| `commit_message_grep` | - | Message regex (e.g. `wip\|temp\|hack` to find sloppy commits) |
+| `commit_introduced_string` | - | Pickaxe `-S` - find only commits that *introduced* a specific string. Massive speedup. |
 | `max_file_size_mb` | 100 | Skip huge binaries |
-| `pushed_after` / `pushed_before` | — | Date filter on repo discovery (not commits) |
-| `language` | — | GitHub language filter |
-| `min_stars` / `max_stars` | — | Star count filter. The "goldmine combo": `max_stars=5 + pushed_before=2yr ago` → forgotten amateur repos with unrotated keys |
+| `pushed_after` / `pushed_before` | - | Date filter on repo discovery (not commits) |
+| `language` | - | GitHub language filter |
+| `min_stars` / `max_stars` | - | Star count filter. The "goldmine combo": `max_stars=5 + pushed_before=2yr ago` → forgotten amateur repos with unrotated keys |
 | `include_extensions` | all | Whitelist of file extensions (e.g. `.env`, `.yml`) |
 | `include_test_keys` | on | Keep public-by-design test keys (`rzp_test_*`, `sk_test_*`). Uncheck to filter |
 
@@ -150,11 +150,11 @@ Typical 50-repo scan: $1.01.
                        Dataset records
 ```
 
-Code Search (when a PAT is provided) is the *precision repo selector*, not the finder — it returns unique repos that actually contain the pattern, then we clone+scan their full history. Cloning is the cost-driving step (gates the per-repo charge). Code Search calls are free preprocessing.
+Code Search (when a PAT is provided) is the *precision repo selector*, not the finder - it returns unique repos that actually contain the pattern, then we clone+scan their full history. Cloning is the cost-driving step (gates the per-repo charge). Code Search calls are free preprocessing.
 
 ## Ethical use
 
-This tool is for **authorized security testing only** — auditing repos you own, organizations you work for, or bug bounty programs that explicitly permit source code review.
+This tool is for **authorized security testing only** - auditing repos you own, organizations you work for, or bug bounty programs that explicitly permit source code review.
 
 Findings should be reported through responsible disclosure channels (the leaking developer's email, the vendor's security@ address, or a bug-bounty program). Using leaked credentials without owner authorization is illegal in most jurisdictions.
 
@@ -166,7 +166,7 @@ Each service has a hand-written TOML in `rules/<service>.toml` declaring:
 - Regex patterns for `id` and/or `secret` components
 - Test-key patterns (intentionally-public values to label-but-skip)
 - Per-rule allowlists (skip placeholder values like `XXXX`, docs/vendor dirs like `node_modules/`)
-- New in v0.12: `secret_regexes` allowlists evaluate against the CAPTURED secret (not the full match) — used to reject obvious code identifiers like `clientIDController` or `payUMode`
+- New in v0.12: `secret_regexes` allowlists evaluate against the CAPTURED secret (not the full match) - used to reject obvious code identifiers like `clientIDController` or `payUMode`
 
 A 40-fixture test suite runs every rule against planted-leak repos before each ship. Pairing logic is unit-tested separately. 64/64 tests must pass to ship.
 
@@ -206,14 +206,14 @@ Findings land in `storage/datasets/default/`.
 
 ## Other Apify actors in the OSINT/security family
 
-- [holehe-email-osint](https://github.com/AnshumanAtrey/holehe-email-osint) — find accounts registered to an email across 100+ sites
-- [phoneinfoga-phone-osint](https://github.com/AnshumanAtrey/phoneinfoga-phone-osint) — phone number OSINT
-- [theharvester-osint](https://github.com/AnshumanAtrey/theharvester-osint) — emails / subdomains / hosts via public sources
-- [social-analyzer](https://github.com/AnshumanAtrey/social-analyzer) — username across 300+ social platforms
-- [nmap-scanner](https://github.com/AnshumanAtrey/nmap-scanner) — Nmap port scanner
-- [netintel](https://github.com/AnshumanAtrey/netintel) — DNS / WHOIS / IP geo / port scan / SSL / tech stack
-- [instagram-profile-intel-no-login](https://github.com/AnshumanAtrey/instagram-profile-intel-no-login) — Instagram profile intel without login
-- [bug-bounty-finder](https://github.com/AnshumanAtrey/bug-bounty-finder) — search programs across HackerOne, Bugcrowd, Intigriti
+- [holehe-email-osint](https://github.com/AnshumanAtrey/holehe-email-osint) - find accounts registered to an email across 100+ sites
+- [phoneinfoga-phone-osint](https://github.com/AnshumanAtrey/phoneinfoga-phone-osint) - phone number OSINT
+- [theharvester-osint](https://github.com/AnshumanAtrey/theharvester-osint) - emails / subdomains / hosts via public sources
+- [social-analyzer](https://github.com/AnshumanAtrey/social-analyzer) - username across 300+ social platforms
+- [nmap-scanner](https://github.com/AnshumanAtrey/nmap-scanner) - Nmap port scanner
+- [netintel](https://github.com/AnshumanAtrey/netintel) - DNS / WHOIS / IP geo / port scan / SSL / tech stack
+- [instagram-profile-intel-no-login](https://github.com/AnshumanAtrey/instagram-profile-intel-no-login) - Instagram profile intel without login
+- [bug-bounty-finder](https://github.com/AnshumanAtrey/bug-bounty-finder) - search programs across HackerOne, Bugcrowd, Intigriti
 
 ## License
 

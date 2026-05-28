@@ -1,9 +1,9 @@
 {
   "actorSpecification": 1,
   "name": "gitleaks-github-secret-scanner",
-  "title": "Gitleaks Cloud — GitHub API Key Hunter & Secret Scanner",
+  "title": "Gitleaks Cloud - GitHub API Key Hunter & Secret Scanner",
   "description": "Hunt leaked API keys across GitHub. Pick a known platform (30 services: Razorpay, Stripe, AWS, OpenAI, Anthropic + more), a keyword (we expand variants), or paste a custom regex. Scan a repo, an org, or all of GitHub. With a GitHub PAT, fast Code Search unlocks. Smart key-secret pairing.",
-  "version": "0.14",
+  "version": "0.15",
   "buildTag": "latest",
   "input": "./INPUT_SCHEMA.json",
   "output": "./output_schema.json",
@@ -61,7 +61,7 @@
         },
         "paired_credentials": {
           "title": "Paired Credentials",
-          "description": "Only findings where the id and secret were both leaked in the same file — directly usable credential pairs.",
+          "description": "Only findings where the id and secret were both leaked in the same file - directly usable credential pairs.",
           "transformation": {
             "fields": [
               "repo_url",

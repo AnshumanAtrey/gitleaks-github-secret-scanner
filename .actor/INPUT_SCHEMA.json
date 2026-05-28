@@ -1,5 +1,5 @@
 {
-  "title": "Gitleaks Cloud — GitHub API Key Hunter — Input",
+  "title": "Gitleaks Cloud - GitHub API Key Hunter - Input",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
@@ -43,12 +43,12 @@
         "PayU (India)", "Cashfree Payments (India)", "Surepass (India KYC)", "Decentro (India BaaS)", "Karza / Perfios (India KYC)", "Attestr (India KYC)", "Tartan (India KYC)",
         "EVM Private Key (Ethereum / Polygon / BSC / Tron)", "Solana Private Key / Keypair", "Bitcoin Private Key (WIF)", "BIP39 Mnemonic / Seed Phrase",
         "Firecrawl", "Trigger.dev", "Generic JWT", "RSA private key",
-        "Other — type the service name in the next field"
+        "Other - type the service name in the next field"
       ]
     },
     "platform_custom": {
       "title": "Custom platform name (only if you picked 'Other' above)",
-      "description": "Free-text label for unlisted services. Used as the display name in your output. Detection falls back to all 30 ruleset patterns merged together — gives broad coverage when we don't have a hand-tuned rule.",
+      "description": "Free-text label for unlisted services. Used as the display name in your output. Detection falls back to all 30 ruleset patterns merged together - gives broad coverage when we don't have a hand-tuned rule.",
       "type": "string",
       "editor": "textfield",
       "nullable": true,
@@ -56,7 +56,7 @@
     },
     "additional_platforms": {
       "title": "Also scan for these platforms (optional, multi-select)",
-      "description": "Used only in 'A known platform' mode. Pick more services to scan alongside the primary platform — useful for one-pass org audits. Each is still priced as one repo, not one per platform.",
+      "description": "Used only in 'A known platform' mode. Pick more services to scan alongside the primary platform - useful for one-pass org audits. Each is still priced as one repo, not one per platform.",
       "type": "array",
       "editor": "select",
       "items": {
@@ -87,7 +87,7 @@
     },
     "keyword": {
       "title": "Keyword (only if you picked 'A keyword' above)",
-      "description": "Type one word — usually a service name or variable name. We auto-generate ~15 common patterns from it: ANTHROPIC_API_KEY, anthropic_api_key, anthropicApiKey, ANTHROPIC_SECRET, ANTHROPIC_TOKEN, etc. No regex knowledge required.",
+      "description": "Type one word - usually a service name or variable name. We auto-generate ~15 common patterns from it: ANTHROPIC_API_KEY, anthropic_api_key, anthropicApiKey, ANTHROPIC_SECRET, ANTHROPIC_TOKEN, etc. No regex knowledge required.",
       "type": "string",
       "editor": "textfield",
       "nullable": true,
@@ -125,7 +125,7 @@
     },
     "github_pat": {
       "title": "GitHub Personal Access Token (highly recommended)",
-      "description": "Optional, but recommended. Without a PAT: GitHub gives ~10 search requests/minute, no Code Search, and no private repos. With a PAT: 30 search/min + 5000 core/hour, Code Search unlocks (10× faster, 50× more coverage), private repos accessible. Generate one at https://github.com/settings/tokens — 'public_repo' scope is enough for public scans, 'repo' for private. Stored encrypted by Apify, never logged.",
+      "description": "Optional, but recommended. Without a PAT: GitHub gives ~10 search requests/minute, no Code Search, and no private repos. With a PAT: 30 search/min + 5000 core/hour, Code Search unlocks (10× faster, 50× more coverage), private repos accessible. Generate one at https://github.com/settings/tokens - 'public_repo' scope is enough for public scans, 'repo' for private. Stored encrypted by Apify, never logged.",
       "type": "string",
       "editor": "textfield",
       "isSecret": true,
@@ -176,7 +176,7 @@
     },
     "max_stars": {
       "title": "Maximum stars (optional, pair with pushed_before for the goldmine play)",
-      "description": "Only consider repos with at most N stars. Use max_stars=5 with pushed_before=2 years ago to target low-attention forgotten repos — much higher hit rate of unrotated keys than scanning popular repos.",
+      "description": "Only consider repos with at most N stars. Use max_stars=5 with pushed_before=2 years ago to target low-attention forgotten repos - much higher hit rate of unrotated keys than scanning popular repos.",
       "type": "integer",
       "editor": "number",
       "nullable": true,
@@ -200,11 +200,11 @@
     },
     "include_pr_refs": {
       "title": "Also scan PR branches (refs/pull/*)",
-      "description": "Catches secrets that were pushed to a Pull Request and then squash-merged away — the PR head ref still holds them. Default ON. Slight slowdown per repo.",
+      "description": "Catches secrets that were pushed to a Pull Request and then squash-merged away - the PR head ref still holds them. Default ON. Slight slowdown per repo.",
       "type": "boolean",
       "editor": "checkbox",
       "default": true,
-      "sectionCaption": "Advanced — scan depth & filters"
+      "sectionCaption": "Advanced - scan depth & filters"
     },
     "include_all_branches": {
       "title": "Scan ALL branches, not just default",
@@ -215,14 +215,14 @@
     },
     "include_submodules": {
       "title": "Recurse into git submodules",
-      "description": "Adds --recurse-submodules. Catches nested repos with their own .env files. Off by default — can be very slow on big projects.",
+      "description": "Adds --recurse-submodules. Catches nested repos with their own .env files. Off by default - can be very slow on big projects.",
       "type": "boolean",
       "editor": "checkbox",
       "default": false
     },
     "include_dangling_objects": {
       "title": "Also scan dangling commits (rebased-away history)",
-      "description": "Uses git fsck --dangling to find commits the developer tried to delete via rebase but didn't garbage-collect. Off by default — adds ~30s per repo.",
+      "description": "Uses git fsck --dangling to find commits the developer tried to delete via rebase but didn't garbage-collect. Off by default - adds ~30s per repo.",
       "type": "boolean",
       "editor": "checkbox",
       "default": false
