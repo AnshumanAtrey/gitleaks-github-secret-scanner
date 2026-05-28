@@ -30,9 +30,3 @@ run_indian_fintech_scan.sh
 .env.local
 *.pem
 *.key
-
-# Test fixtures necessarily contain pattern-shaped synthetic values (AKIA*,
-# sk_live_*, etc.) for the detection regexes to validate against. They are
-# NOT real credentials, but they trigger GitHub's secret-scanning push protection.
-# Develop locally; CI runs them in a private test pipeline.
-tests/
