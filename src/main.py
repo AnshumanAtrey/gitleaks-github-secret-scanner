@@ -42,6 +42,7 @@ from src.scanner import Finding, ScanOptions, ScannerError, scan_repo, write_con
 log = logging.getLogger("gitleaks-cloud")
 
 MAX_PARALLEL_CLONES = 4  # how many repos to clone+scan concurrently
+NO_PAT_GLOBAL_CAP = 20   # max repos to scan in all_github mode without a PAT (unauth search ≈ 10 req/min on a shared IP)
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -360,6 +361,21 @@ async def main() -> None:
 
         # ── Stage 1: discover candidate repos ────────────────────────────
         repos: list[Repo] = []
+        # Without a PAT, all-GitHub discovery relies on GitHub's unauthenticated
+        # search (~10 req/min on Apify's shared IP) and can only scan a handful of
+        # repos inside a sane time/quota budget. Bound it so a no-token run degrades
+        # to a fast, partial scan instead of rate-limiting out or timing out.
+        # Providing a github_pat removes this cap and unlocks Code Search.
+        no_pat_global = inputs.scope == "all_github" and not inputs.github_pat
+        discovery_max = inputs.max_results
+        if no_pat_global and discovery_max > NO_PAT_GLOBAL_CAP:
+            discovery_max = NO_PAT_GLOBAL_CAP
+            Actor.log.warning(
+                "No GitHub PAT in all-GitHub mode — capping this run to %d repos "
+                "(unauthenticated search is ~10 req/min on a shared IP). "
+                "Add a 'github_pat' to unlock Code Search and scan up to %d.",
+                NO_PAT_GLOBAL_CAP, inputs.max_results,
+            )
         try:
             if inputs.github_pat and inputs.scope == "all_github":
                 queries = build_code_search_queries(inputs, scan_service)
@@ -382,19 +398,34 @@ async def main() -> None:
                     if scan_service.search_keywords
                     else (inputs.keyword or inputs.platform_custom or inputs.platform)
                 )
-                repos = list_repos(
-                    scope=inputs.scope,
-                    target=inputs.target,
-                    keyword=keyword,
-                    max_repos=inputs.max_results,
-                    pat=inputs.github_pat,
-                    pushed_after=inputs.pushed_after,
-                    pushed_before=inputs.pushed_before,
-                    language=inputs.language,
-                    min_stars=inputs.min_stars,
-                    max_stars=inputs.max_stars,
-                )
-                Actor.log.info("discovered %d candidate repos via repo search", len(repos))
+                try:
+                    repos = list_repos(
+                        scope=inputs.scope,
+                        target=inputs.target,
+                        keyword=keyword,
+                        max_repos=discovery_max,
+                        pat=inputs.github_pat,
+                        pushed_after=inputs.pushed_after,
+                        pushed_before=inputs.pushed_before,
+                        language=inputs.language,
+                        min_stars=inputs.min_stars,
+                        max_stars=inputs.max_stars,
+                    )
+                    Actor.log.info("discovered %d candidate repos via repo search", len(repos))
+                except ListerError as exc:
+                    # No-PAT all-GitHub discovery is best-effort: a rate limit here
+                    # must NOT fail the whole run — degrade to whatever we have
+                    # (often none) and exit cleanly with guidance. For targeted
+                    # scopes (single_repo / user_or_org) and PAT runs the error is
+                    # actionable, so re-raise to the hard-fail path below.
+                    if no_pat_global:
+                        Actor.log.warning(
+                            "Unauthenticated all-GitHub discovery didn't complete (%s). "
+                            "Add a 'github_pat' for reliable, higher-volume scanning.", exc,
+                        )
+                        repos = []
+                    else:
+                        raise
         except ListerError as exc:
             Actor.log.error("repo discovery failed: %s", exc)
             await Actor.fail(status_message=str(exc))
