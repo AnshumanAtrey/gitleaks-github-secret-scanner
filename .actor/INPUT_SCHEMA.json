@@ -9,6 +9,7 @@
       "type": "string",
       "editor": "select",
       "default": "platform",
+      "prefill": "platform",
       "enum": ["platform", "keyword", "regex"],
       "enumTitles": [
         "A known platform (pick from our list of 30)",
@@ -23,6 +24,7 @@
       "type": "string",
       "editor": "select",
       "default": "razorpay",
+      "prefill": "razorpay",
       "enum": [
         "razorpay", "stripe", "aws", "gcp-api-key", "gcp-service-account",
         "openai", "anthropic", "groq", "gemini", "github-pat",
@@ -107,6 +109,7 @@
       "type": "string",
       "editor": "select",
       "default": "all_github",
+      "prefill": "single_repo",
       "enum": ["all_github", "user_or_org", "single_repo"],
       "enumTitles": [
         "All of GitHub (search every public repo)",
@@ -121,7 +124,8 @@
       "type": "string",
       "editor": "textfield",
       "nullable": true,
-      "example": "https://github.com/owner/repo"
+      "example": "https://github.com/owner/repo",
+      "prefill": "https://github.com/AnshumanAtrey/gitleaks-github-secret-scanner"
     },
     "github_pat": {
       "title": "GitHub Personal Access Token (highly recommended)",
@@ -138,6 +142,7 @@
       "type": "integer",
       "editor": "number",
       "default": 100,
+      "prefill": 5,
       "minimum": 1,
       "maximum": 1000,
       "sectionCaption": "Limits and filters"
@@ -204,6 +209,7 @@
       "type": "boolean",
       "editor": "checkbox",
       "default": true,
+      "prefill": false,
       "sectionCaption": "Advanced - scan depth & filters"
     },
     "include_all_branches": {
@@ -211,7 +217,8 @@
       "description": "Clones with --no-single-branch so feature branches are also scanned. Default ON.",
       "type": "boolean",
       "editor": "checkbox",
-      "default": true
+      "default": true,
+      "prefill": false
     },
     "include_submodules": {
       "title": "Recurse into git submodules",
