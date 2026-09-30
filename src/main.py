@@ -43,6 +43,10 @@ log = logging.getLogger("gitleaks-cloud")
 
 MAX_PARALLEL_CLONES = 4  # how many repos to clone+scan concurrently
 NO_PAT_GLOBAL_CAP = 20   # max repos to scan in all_github mode without a PAT (unauth search ≈ 10 req/min on a shared IP)
+SCAN_BUDGET_SECS = 240   # wall-clock budget for the clone+scan stage: past it, no new repo
+                         # starts and in-flight git/gitleaks calls are clamped, so the run
+                         # returns what it found and exits SUCCEEDED. Apify's daily QA cap is
+                         # 300s; a real user's wide scan stays bounded instead of running away.
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -321,6 +325,16 @@ async def discover_repos_via_code_search(
 # ────────────────────────────────────────────────────────────────────────────
 
 
+async def _safe_status(message: str) -> None:
+    """Set the run's status message, never letting it raise: a status update must
+    not turn a finished scan into a FAILED run (e.g. an SDK run-origin enum it does
+    not yet know, like APIFY_AI)."""
+    try:
+        await Actor.set_status_message(message)
+    except Exception:  # noqa: BLE001
+        pass
+
+
 async def main() -> None:
     logging.basicConfig(
         level=os.environ.get("LOG_LEVEL", "INFO"),
@@ -335,6 +349,7 @@ async def main() -> None:
 
         inputs = read_inputs(await Actor.get_input() or {})
         scan_opts = inputs_to_scan_options(inputs)
+        scan_opts.deadline = time.monotonic() + SCAN_BUDGET_SECS
 
         try:
             services = load_all()
@@ -444,11 +459,16 @@ async def main() -> None:
         sem = asyncio.Semaphore(MAX_PARALLEL_CLONES)
         total_findings = 0
         scanned = 0
+        skipped = 0
         results_lock = asyncio.Lock()
 
         async def scan_one(repo: Repo, idx: int) -> None:
-            nonlocal total_findings, scanned
+            nonlocal total_findings, scanned, skipped
             async with sem:
+                if time.monotonic() >= scan_opts.deadline:
+                    async with results_lock:
+                        skipped += 1
+                    return
                 t0 = time.time()
                 try:
                     findings = await asyncio.to_thread(
@@ -503,9 +523,12 @@ async def main() -> None:
         tasks = [scan_one(r, i) for i, r in enumerate(repos)]
         await asyncio.gather(*tasks)
 
-        Actor.log.info(
-            "done. scanned=%d/%d total_findings=%d", scanned, len(repos), total_findings
-        )
+        summary = f"Scanned {scanned}/{len(repos)} repos, {total_findings} findings"
+        if skipped:
+            summary += (f"; {skipped} left unscanned at the {SCAN_BUDGET_SECS}s time budget "
+                        f"(add a github_pat and raise max_results to go wider)")
+        Actor.log.info("done. %s", summary)
+        await _safe_status(summary)
 
 
 if __name__ == "__main__":

@@ -109,7 +109,7 @@
       "type": "string",
       "editor": "select",
       "default": "all_github",
-      "prefill": "single_repo",
+      "prefill": "all_github",
       "enum": ["all_github", "user_or_org", "single_repo"],
       "enumTitles": [
         "All of GitHub (search every public repo)",
@@ -124,8 +124,7 @@
       "type": "string",
       "editor": "textfield",
       "nullable": true,
-      "example": "https://github.com/owner/repo",
-      "prefill": "https://github.com/AnshumanAtrey/gitleaks-github-secret-scanner"
+      "example": "https://github.com/owner/repo"
     },
     "github_pat": {
       "title": "GitHub Personal Access Token (highly recommended)",
@@ -142,7 +141,7 @@
       "type": "integer",
       "editor": "number",
       "default": 100,
-      "prefill": 5,
+      "prefill": 15,
       "minimum": 1,
       "maximum": 1000,
       "sectionCaption": "Limits and filters"

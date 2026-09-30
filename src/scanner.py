@@ -13,6 +13,7 @@ import logging
 import shutil
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -22,6 +23,14 @@ CLONE_TIMEOUT = 180     # seconds — per-repo clone budget (raised for --no-sin
 FETCH_PR_TIMEOUT = 120  # seconds — PR refs fetch budget
 SCAN_TIMEOUT = 300      # seconds — per-repo scan budget
 DANGLING_TIMEOUT = 180  # seconds — fsck + cat-file budget
+
+
+def _op_timeout(cap: int, deadline: float | None) -> int:
+    """Clamp a subprocess timeout to the run's remaining wall-clock budget, so no
+    single git/gitleaks call overruns the actor deadline. Never below 1 second."""
+    if deadline is None:
+        return cap
+    return max(1, min(cap, int(deadline - time.monotonic())))
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -47,6 +56,10 @@ class ScanOptions:
 
     # File-level limit
     max_file_size_mb: int = 100             # --max-target-megabytes
+
+    # Runtime budget (set by main.py, not a user input): absolute time.monotonic()
+    # past which clone/gitleaks calls are clamped so the run honours its deadline.
+    deadline: float | None = None
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -107,16 +120,17 @@ def clone(clone_url: str, dest: Path, opts: ScanOptions) -> None:
         cmd.append("--recurse-submodules")
     cmd.extend([clone_url, str(dest)])
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=CLONE_TIMEOUT)
+        proc = subprocess.run(cmd, capture_output=True, text=True,
+                              timeout=_op_timeout(CLONE_TIMEOUT, opts.deadline))
     except subprocess.TimeoutExpired:
-        raise ScannerError(f"clone timeout ({CLONE_TIMEOUT}s) for {clone_url}")
+        raise ScannerError(f"clone timeout for {clone_url}")
     if proc.returncode != 0:
         raise ScannerError(
             f"clone failed for {clone_url}: {proc.stderr.strip()[:300]}"
         )
 
 
-def fetch_pr_refs(repo_path: Path) -> bool:
+def fetch_pr_refs(repo_path: Path, deadline: float | None = None) -> bool:
     """Fetch refs/pull/*/head into refs/remotes/origin/pull/*.
 
     Returns True on success, False on failure (we don't fail the scan).
@@ -127,7 +141,8 @@ def fetch_pr_refs(repo_path: Path) -> bool:
         proc = subprocess.run(
             ["git", "-C", str(repo_path), "fetch", "--quiet", "origin",
              "+refs/pull/*/head:refs/remotes/origin/pull/*"],
-            capture_output=True, text=True, timeout=FETCH_PR_TIMEOUT,
+            capture_output=True, text=True,
+            timeout=_op_timeout(FETCH_PR_TIMEOUT, deadline),
         )
     except subprocess.TimeoutExpired:
         log.warning("PR refs fetch timeout for %s", repo_path)
@@ -180,9 +195,10 @@ def run_gitleaks(repo_path: Path, config_path: Path, opts: ScanOptions) -> list[
         f"--log-opts={log_opts_str}",
     ]
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=SCAN_TIMEOUT)
+        proc = subprocess.run(cmd, capture_output=True, text=True,
+                              timeout=_op_timeout(SCAN_TIMEOUT, opts.deadline))
     except subprocess.TimeoutExpired:
-        raise ScannerError(f"gitleaks timeout ({SCAN_TIMEOUT}s) for {repo_path}")
+        raise ScannerError(f"gitleaks timeout for {repo_path}")
     if proc.returncode not in (0, 1):
         raise ScannerError(
             f"gitleaks error (exit {proc.returncode}): {proc.stderr.strip()[:300]}"
@@ -282,7 +298,7 @@ def scan_repo(
     try:
         clone(clone_url, clone_path, opts)
         if opts.include_pr_refs:
-            fetch_pr_refs(clone_path)
+            fetch_pr_refs(clone_path, opts.deadline)
 
         findings = run_gitleaks(clone_path, config_path, opts)
 
