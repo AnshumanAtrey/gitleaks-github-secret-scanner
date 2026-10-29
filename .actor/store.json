@@ -1,0 +1,20 @@
+{
+  "$comment": "Store listing fields that apify push never sends. Applied by scripts/store-metadata.mjs after every deploy. Title, description and categories live in actor.json (copied from the live listing on 2026-10-29, so adding the CI kit changed nothing else).",
+  "actorId": "k0CSLcjq7aEgKGXJz",
+  "seoTitle": "GitHub Secret Scanner - Find Leaked API Keys | Gitleaks",
+  "seoDescription": "Scan GitHub for leaked API keys across 30+ services (Razorpay, Stripe, AWS, OpenAI, Anthropic, Gemini, Supabase, Firebase, GitHub PATs + more). Cloud-hosted gitleaks. Smart key-secret pairing.",
+  "exampleRunInput$comment": "The prefill: trufflesecurity/test_keys exists so secret scanners have something to find (4 s, 2 findings, run Wfs0yidvduAigm7ED). The old prefill searched all of GitHub and cloned 15 repos, 10 s to 246 s of the daily test's 300 s; the old example input used fields the schema no longer has (target_mode, target_value, max_repos).",
+  "exampleRunInput": {
+    "search_for": "platform",
+    "platform": "aws",
+    "scope": "single_repo",
+    "target": "https://github.com/trufflesecurity/test_keys"
+  },
+  "actorPermissionLevel": "LIMITED_PERMISSIONS",
+  "isPublic": true,
+  "defaultRunOptions": {
+    "build": "latest",
+    "memoryMbytes": 2048,
+    "timeoutSecs": 3600
+  }
+}
