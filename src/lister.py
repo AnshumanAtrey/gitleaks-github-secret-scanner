@@ -16,10 +16,18 @@ import time
 from dataclasses import dataclass
 from typing import Iterable
 
+import os
+import subprocess
+
 import requests
 
 GITHUB_API = "https://api.github.com"
 log = logging.getLogger(__name__)
+
+# Without a token GitHub allows 60 API calls an hour per IP, and Apify's IPs are shared with every
+# other run on them, so a rate limit there is rarely the user's doing. main fills this with a few
+# residential proxy URLs (one IP each); a rate-limited call without a PAT tries them in turn.
+FALLBACK_PROXIES: list[str] = []
 
 
 class ListerError(Exception):
@@ -47,8 +55,11 @@ def _headers(pat: str | None) -> dict[str, str]:
 
 def _get(url: str, params: dict, pat: str | None, *, retries: int = 2) -> dict:
     """GET with retry, rate-limit awareness, and actionable error messages."""
-    for attempt in range(retries + 1):
-        r = requests.get(url, params=params, headers=_headers(pat), timeout=30)
+    fallbacks = [] if pat else list(FALLBACK_PROXIES)
+    proxies = None
+    attempt = 0
+    while attempt <= retries:
+        r = requests.get(url, params=params, headers=_headers(pat), timeout=30, proxies=proxies)
         if r.status_code == 200:
             return r.json()
 
@@ -78,13 +89,20 @@ def _get(url: str, params: dict, pat: str | None, *, retries: int = 2) -> dict:
                 if wait and wait <= 120:
                     log.warning("rate limit hit with PAT; sleeping %ds before retry", wait)
                     time.sleep(wait)
+                    attempt += 1
                     continue
                 raise ListerError(
                     f"GitHub rate limit hit even with PAT (30 req/min). Resets in {wait}s. "
                     "Wait, then retry. If this happens repeatedly, your PAT may have low quota on its account."
                 )
+            elif fallbacks:
+                proxy = fallbacks.pop(0)
+                proxies = {"http": proxy, "https": proxy}
+                log.warning("GitHub's unauthenticated limit is used up on this shared IP; "
+                            "trying again from a fresh IP (%d left)", len(fallbacks))
+                continue
             else:
-                # No PAT — push the user to add one, this is the common case
+                # No PAT and no fresh IP left: push the user to add one
                 raise ListerError(
                     "GitHub rate limit hit (10 req/min unauthenticated, shared across Apify's IP pool). "
                     "Add a GitHub Personal Access Token in the 'github_pat' field to raise the limit to 30 req/min "
@@ -110,6 +128,7 @@ def _get(url: str, params: dict, pat: str | None, *, retries: int = 2) -> dict:
         # Server errors — retry with backoff
         if r.status_code >= 500 and attempt < retries:
             time.sleep(2 ** attempt)
+            attempt += 1
             continue
 
         raise ListerError(
@@ -245,11 +264,9 @@ def list_user(
     repos: list[Repo] = []
     page = 1
     per_page = 100
+    # /users/{name}/repos serves organizations too (checked 2026-10-29 on trufflesecurity), so one
+    # endpoint covers both and no probe call spends the shared unauthenticated quota.
     base = f"{GITHUB_API}/users/{username}/repos"
-    try:
-        _get(base, {"per_page": 1}, pat)
-    except ListerError:
-        base = f"{GITHUB_API}/orgs/{username}/repos"
 
     lang_lower = language.strip().lower() if language else None
 
@@ -284,8 +301,25 @@ def list_user(
 
 
 def list_single(repo_url: str, pat: str | None) -> list[Repo]:
-    """Validate the URL and return one Repo entry."""
+    """Validate the URL and return one Repo entry.
+
+    Without a PAT the GitHub API is not needed: `git ls-remote` proves the public repo exists and
+    the clone needs no API call, so a shared IP's used-up quota cannot fail a one-repo scan.
+    """
     owner, name = _parse_repo_url(repo_url)
+    if not pat:
+        clone_url = f"https://github.com/{owner}/{name}.git"
+        try:
+            proc = subprocess.run(["git", "ls-remote", "--exit-code", clone_url, "HEAD"], capture_output=True,
+                                  text=True, timeout=60, env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
+        except subprocess.TimeoutExpired:
+            raise ListerError(f"GitHub did not answer for {owner}/{name} within 60 s. Try again.")
+        if proc.returncode != 0:
+            raise ListerError(
+                f"GitHub has no public repo at https://github.com/{owner}/{name}. Check the URL; if the repo "
+                "is private, add a github_pat that can read it."
+            )
+        return [Repo(full_name=f"{owner}/{name}", clone_url=clone_url, size_kb=0, pushed_at="")]
     item = _get(f"{GITHUB_API}/repos/{owner}/{name}", {}, pat)
     return [Repo(
         full_name=item["full_name"],

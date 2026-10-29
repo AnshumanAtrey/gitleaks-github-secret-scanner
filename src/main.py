@@ -33,6 +33,7 @@ from apify import Actor
 
 from src.code_search import CodeSearchClient, CodeSearchError, CodeSearchHit
 from src.keyword_expander import expand as expand_keyword
+from src import lister
 from src.lister import list_repos, ListerError, Repo
 from src.output import to_record, matches_extension_filter
 from src.pairing import pair
@@ -342,11 +343,6 @@ async def main() -> None:
     )
 
     async with Actor:
-        try:
-            await Actor.charge("actor_start")
-        except Exception:
-            pass
-
         inputs = read_inputs(await Actor.get_input() or {})
         scan_opts = inputs_to_scan_options(inputs)
         scan_opts.deadline = time.monotonic() + SCAN_BUDGET_SECS
@@ -373,6 +369,33 @@ async def main() -> None:
             inputs.include_submodules, inputs.include_dangling_objects,
             MAX_PARALLEL_CLONES,
         )
+
+        # The run's spending limit, which Apify says a run must stop at: the start fee and one repo
+        # must fit before anything is done, and each repo's fee is reserved before its scan starts.
+        cm = Actor.get_charging_manager()
+        pricing = cm.get_pricing_info()
+        price = pricing.per_event_prices
+        def left() -> float:
+            return pricing.max_total_charge_usd - cm.calculate_total_charged_amount()
+        if pricing.is_pay_per_event and left() < price.get("actor_start", 0) + price.get("per_repo_scanned", 0):
+            msg = (f"Nothing was scanned and nothing was charged: this run's spending limit of "
+                   f"${pricing.max_total_charge_usd:g} cannot pay for one repo "
+                   f"(${price.get('actor_start', 0) + price.get('per_repo_scanned', 0):g} with the start fee). "
+                   "Raise the run's maximum cost in the run options, then run it again.")
+            Actor.log.warning(msg)
+            await _safe_status(msg)
+            return
+
+        # Without a PAT, a rate-limited GitHub API call is retried from a fresh residential IP
+        # (src/lister.py FALLBACK_PROXIES). Best effort: no proxy means the plain error.
+        if not inputs.github_pat:
+            try:
+                proxy_cfg = await Actor.create_proxy_configuration(groups=["RESIDENTIAL"])
+                if proxy_cfg:
+                    lister.FALLBACK_PROXIES[:] = [await proxy_cfg.new_url(session_id=f"gh{i}{int(time.time())}")
+                                                  for i in range(3)]
+            except Exception as exc:  # noqa: BLE001
+                Actor.log.debug("no fallback proxy for GitHub API calls: %s", exc)
 
         # ── Stage 1: discover candidate repos ────────────────────────────
         repos: list[Repo] = []
@@ -446,6 +469,12 @@ async def main() -> None:
             await Actor.fail(status_message=str(exc))
             return
 
+        # Charged only now, so input the run cannot use costs nothing.
+        try:
+            await Actor.charge("actor_start")
+        except Exception:
+            pass
+
         if not repos:
             Actor.log.warning("no repos matched — nothing to scan")
             return
@@ -460,15 +489,23 @@ async def main() -> None:
         total_findings = 0
         scanned = 0
         skipped = 0
+        unpaid = 0          # repos left out because the spending limit could not pay for them
+        reserved = 0        # repo fees held for scans in flight
         results_lock = asyncio.Lock()
+        repo_fee = price.get("per_repo_scanned", 0) if pricing.is_pay_per_event else 0
 
         async def scan_one(repo: Repo, idx: int) -> None:
-            nonlocal total_findings, scanned, skipped
+            nonlocal total_findings, scanned, skipped, unpaid, reserved
             async with sem:
                 if time.monotonic() >= scan_opts.deadline:
                     async with results_lock:
                         skipped += 1
                     return
+                async with results_lock:
+                    if repo_fee and left() - reserved * repo_fee < repo_fee:
+                        unpaid += 1
+                        return
+                    reserved += 1
                 t0 = time.time()
                 try:
                     findings = await asyncio.to_thread(
@@ -477,9 +514,13 @@ async def main() -> None:
                     )
                 except ScannerError as exc:
                     Actor.log.warning("skip %s: %s", repo.full_name, exc)
+                    async with results_lock:
+                        reserved -= 1
                     return
                 except Exception as exc:
                     Actor.log.exception("unexpected error scanning %s: %s", repo.full_name, exc)
+                    async with results_lock:
+                        reserved -= 1
                     return
 
                 records = pair(findings, scan_service)
@@ -515,6 +556,7 @@ async def main() -> None:
                         await Actor.charge("per_repo_scanned")
                     except Exception:
                         pass
+                    reserved -= 1
                     Actor.log.info(
                         "[%d/%d] %s findings=%d elapsed=%.1fs",
                         scanned, len(repos), repo.full_name, len(records), time.time() - t0,
@@ -527,6 +569,9 @@ async def main() -> None:
         if skipped:
             summary += (f"; {skipped} left unscanned at the {SCAN_BUDGET_SECS}s time budget "
                         f"(add a github_pat and raise max_results to go wider)")
+        if unpaid:
+            summary += (f"; {unpaid} not scanned because this run's spending limit of "
+                        f"${pricing.max_total_charge_usd:g} was reached (raise the run's maximum cost to scan them)")
         Actor.log.info("done. %s", summary)
         await _safe_status(summary)
 

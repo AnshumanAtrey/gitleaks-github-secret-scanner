@@ -1,0 +1,58 @@
+{
+  "$comment": "Example tasks published on the Store by scripts/publish-tasks.mjs after every deploy (CI only). Each one is a search people type, with its own Google-indexed landing page and .md (manager/rules/SEO.md). Targets are trufflesecurity's public test repos, built to hold fake secrets.",
+  "options": {
+    "build": "latest",
+    "memoryMbytes": 2048,
+    "timeoutSecs": 3600
+  },
+  "tasks": [
+    {
+      "name": "scan-github-repo-for-leaked-secrets",
+      "title": "Scan a GitHub repo for leaked API keys and secrets",
+      "description": "Scan one public GitHub repository's full history, every branch and pull request included, for leaked AWS, Stripe, OpenAI, Anthropic and GitHub tokens with gitleaks, each finding with file, line, commit and author. The example repo holds test keys made for secret scanners; replace it with yours.",
+      "input": {
+        "search_for": "platform",
+        "platform": "aws",
+        "additional_platforms": ["stripe", "openai", "anthropic", "github-pat"],
+        "scope": "single_repo",
+        "target": "https://github.com/trufflesecurity/test_keys"
+      },
+      "seoTitle": "GitHub Secret Scanner - Leaked API Keys in a Repo",
+      "seoDescription": "Scan a GitHub repo's full history, branches and pull requests for leaked AWS, Stripe, OpenAI and GitHub keys. Each finding with file, line and commit.",
+      "inputSchemaFields": ["target", "platform", "additional_platforms", "github_pat"],
+      "datasetView": "overview"
+    },
+    {
+      "name": "scan-github-organization-for-secrets",
+      "title": "Scan every repo of a GitHub user or organization for secrets",
+      "description": "Audit all public repositories of a GitHub user or organization for leaked cloud and API credentials in one run, newest pushes first, priced per repo scanned. Set how many repos to cover; add a GitHub token for large organizations.",
+      "input": {
+        "search_for": "platform",
+        "platform": "aws",
+        "additional_platforms": ["github-pat", "stripe", "slack-webhook"],
+        "scope": "user_or_org",
+        "target": "trufflesecurity",
+        "max_results": 5
+      },
+      "seoTitle": "GitHub Organization Secret Scan - Audit Every Repo",
+      "seoDescription": "Audit every public repo of a GitHub user or organization for leaked AWS, GitHub, Stripe and Slack credentials in one run. Priced per repo scanned.",
+      "inputSchemaFields": ["target", "max_results", "platform", "additional_platforms", "github_pat"],
+      "datasetView": "overview"
+    },
+    {
+      "name": "find-leaked-stripe-keys-on-github",
+      "title": "Find leaked Stripe keys across public GitHub repos",
+      "description": "Search all of public GitHub for repos that mention Stripe and scan them for live and test secret keys, with each finding's repo, file, line and commit. Without a GitHub token a run covers up to 20 repos; add one to go wider and use Code Search.",
+      "input": {
+        "search_for": "platform",
+        "platform": "stripe",
+        "scope": "all_github",
+        "max_results": 20
+      },
+      "seoTitle": "Find Leaked Stripe Keys on GitHub - Secret Hunter",
+      "seoDescription": "Hunt public GitHub repos for leaked Stripe secret keys, each finding with repo, file, line and commit. Add a GitHub token to search wider.",
+      "inputSchemaFields": ["platform", "max_results", "pushed_after", "github_pat"],
+      "datasetView": "overview"
+    }
+  ]
+}

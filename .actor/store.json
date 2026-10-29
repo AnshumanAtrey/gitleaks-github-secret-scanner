@@ -16,5 +16,50 @@
     "build": "latest",
     "memoryMbytes": 2048,
     "timeoutSecs": 3600
+  },
+  "pricing": {
+    "apply": true,
+    "$comment": "Store discounts (owner's Gentle ladder, rolled out 2026-10-29 after holehe and social-analyzer): Free and Starter keep the flat price, Scale pays 10% less, Business and above 20% less; apify-actor-start stays flat. Aug-Oct paid revenue of this actor came almost all from Starter, and Apify bills our platform cost of Scale and Business runs lower only when discounts are on (compute $0.16 and $0.13 per CU instead of $0.20, https://docs.apify.com/actors/monetize/pricing-and-costs.md). The CI script applies first-time pricing and decreases; increases go through Console with 14 days' notice.",
+    "pricingInfos": [
+      {
+        "pricingModel": "PAY_PER_EVENT",
+        "apifyMarginPercentage": 0.2,
+        "pricingPerEvent": {
+          "actorChargeEvents": {
+            "actor_start": {
+              "eventTitle": "Actor start",
+              "eventDescription": "Charged once per run for the lister + scan orchestration.",
+              "isPrimaryEvent": true,
+              "eventPriceUsd": 0.01
+            },
+            "per_repo_scanned": {
+              "eventTitle": "Per repo scanned",
+              "eventDescription": "Charged once per repo successfully cloned and scanned. Unreachable repos are not charged.",
+              "eventTieredPricingUsd": {
+                "FREE": {
+                  "tieredEventPriceUsd": 0.02
+                },
+                "BRONZE": {
+                  "tieredEventPriceUsd": 0.02
+                },
+                "SILVER": {
+                  "tieredEventPriceUsd": 0.018
+                },
+                "GOLD": {
+                  "tieredEventPriceUsd": 0.016
+                },
+                "PLATINUM": {
+                  "tieredEventPriceUsd": 0.016
+                },
+                "DIAMOND": {
+                  "tieredEventPriceUsd": 0.016
+                }
+              }
+            }
+          }
+        },
+        "reasonForChange": "Store discounts: Scale plans pay 10% less and Business and enterprise plans 20% less. Free and Starter prices are unchanged."
+      }
+    ]
   }
 }

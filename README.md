@@ -36,8 +36,8 @@ Pay-per-event:
 
 | Event | Price | When it fires |
 |---|---|---|
-| `Actor start` | $0.01 | Charged once per run for the lister + scan orchestration |
-| `Per repo scanned` | $0.02 | Charged once per repo successfully cloned and scanned. Unreachable repos are not charged |
+| `Actor start` | $0.01 | Charged once per run for the lister + scan orchestration, after the repos are found: a run whose input cannot be used costs nothing |
+| `Per repo scanned` | $0.02 | Charged once per repo successfully cloned and scanned. Unreachable repos are not charged. On paid Apify plans: $0.018 on Scale, $0.016 on Business and above. A run stops at its spending limit and names the repos it left out |
 
 ### Typical scan costs
 
