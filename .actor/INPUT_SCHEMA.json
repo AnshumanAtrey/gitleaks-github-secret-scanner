@@ -3,33 +3,15 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "search_for": {
-      "title": "What are you hunting for?",
-      "description": "Pick how you want to define the secret. 'Known platform' = use our hand-tuned rules (best accuracy). 'Keyword' = just type a word like 'anthropic', we auto-generate UPPER/snake/camel variants for you (no regex needed). 'Custom regex' = power user, paste your own pattern.",
-      "type": "string",
-      "editor": "select",
-      "default": "platform",
-      "prefill": "platform",
-      "enum": [
-        "platform",
-        "keyword",
-        "regex"
-      ],
-      "enumTitles": [
-        "A known platform (pick from our list of 30)",
-        "A keyword (just type a word, we expand the variations)",
-        "A custom regex (you write the exact pattern)"
-      ],
-      "sectionCaption": "What to search for"
-    },
     "platform": {
-      "title": "Platform",
-      "description": "Used only when 'What are you hunting for?' = 'A known platform'. Pick the service whose credentials you want to find. 'Other' falls back to broad detection across all 30 services.",
+      "title": "Secret type (platform)",
+      "description": "Secret type (platform): pick the service whose leaked keys you want to find. Leave it on 'All known services' to scan for every supported credential at once (AWS, Stripe, OpenAI, Razorpay, GitHub tokens, private keys and 30+ more). Pick one service to focus the scan and cut noise.",
       "type": "string",
       "editor": "select",
-      "default": "razorpay",
-      "prefill": "aws",
+      "default": "all",
+      "prefill": "all",
       "enum": [
+        "all",
         "razorpay",
         "stripe",
         "aws",
@@ -73,6 +55,7 @@
         "custom"
       ],
       "enumTitles": [
+        "All known services (default)",
         "Razorpay",
         "Stripe",
         "AWS",
@@ -116,8 +99,51 @@
         "Other - type the service name in the next field"
       ]
     },
+    "target": {
+      "title": "GitHub target (target)",
+      "description": "GitHub target (target): a repo URL (https://github.com/owner/name), or a username / organization (octocat, microsoft). LEAVE EMPTY to scan across all of GitHub. The search area is detected from what you type, so you do not need to set anything else; add a GitHub token under Advanced for far more coverage and speed.",
+      "type": "string",
+      "editor": "textfield",
+      "nullable": true,
+      "example": "https://github.com/owner/repo",
+      "prefill": "https://github.com/trufflesecurity/test_keys"
+    },
+    "search_for": {
+      "title": "Search method (search_for)",
+      "description": "Pick how you want to define the secret. 'Known platform' = use our hand-tuned rules (best accuracy). 'Keyword' = just type a word like 'anthropic', we auto-generate UPPER/snake/camel variants for you (no regex needed). 'Custom regex' = power user, paste your own pattern.",
+      "type": "string",
+      "editor": "select",
+      "default": "platform",
+      "enum": [
+        "platform",
+        "keyword",
+        "regex"
+      ],
+      "enumTitles": [
+        "A known platform (pick from our list of 30)",
+        "A keyword (just type a word, we expand the variations)",
+        "A custom regex (you write the exact pattern)"
+      ],
+      "sectionCaption": "Advanced search"
+    },
+    "keyword": {
+      "title": "Keyword (keyword)",
+      "description": "Type one word - usually a service name or variable name. We auto-generate ~15 common patterns from it: ANTHROPIC_API_KEY, anthropic_api_key, anthropicApiKey, ANTHROPIC_SECRET, ANTHROPIC_TOKEN, etc. No regex knowledge required.",
+      "type": "string",
+      "editor": "textfield",
+      "nullable": true,
+      "example": "anthropic"
+    },
+    "regex_pattern": {
+      "title": "Custom pattern (regex_pattern)",
+      "description": "Power-user mode. Provide a regex that matches the secret value. The literal/fixed portion is used as the GitHub Code Search query; the full regex extracts the actual secret value from matching files. Examples: rzp_live_[A-Za-z0-9]{14} or sk-ant-api03-[A-Za-z0-9_-]{93}",
+      "type": "string",
+      "editor": "textfield",
+      "nullable": true,
+      "example": "rzp_live_[A-Za-z0-9]{14}"
+    },
     "platform_custom": {
-      "title": "Custom platform name (only if you picked 'Other' above)",
+      "title": "Custom service name (platform_custom)",
       "description": "Free-text label for unlisted services. Used as the display name in your output. Detection falls back to all 30 ruleset patterns merged together - gives broad coverage when we don't have a hand-tuned rule.",
       "type": "string",
       "editor": "textfield",
@@ -125,7 +151,7 @@
       "example": "convex"
     },
     "additional_platforms": {
-      "title": "Also scan for these platforms (optional, multi-select)",
+      "title": "Also scan these services (additional_pla",
       "description": "Used only in 'A known platform' mode. Pick more services to scan alongside the primary platform - useful for one-pass org audits. Each is still priced as one repo, not one per platform.",
       "type": "array",
       "editor": "select",
@@ -219,29 +245,11 @@
       "uniqueItems": true,
       "nullable": true
     },
-    "keyword": {
-      "title": "Keyword (only if you picked 'A keyword' above)",
-      "description": "Type one word - usually a service name or variable name. We auto-generate ~15 common patterns from it: ANTHROPIC_API_KEY, anthropic_api_key, anthropicApiKey, ANTHROPIC_SECRET, ANTHROPIC_TOKEN, etc. No regex knowledge required.",
-      "type": "string",
-      "editor": "textfield",
-      "nullable": true,
-      "example": "anthropic"
-    },
-    "regex_pattern": {
-      "title": "Custom regex (only if you picked 'A custom regex' above)",
-      "description": "Power-user mode. Provide a regex that matches the secret value. The literal/fixed portion is used as the GitHub Code Search query; the full regex extracts the actual secret value from matching files. Examples: rzp_live_[A-Za-z0-9]{14} or sk-ant-api03-[A-Za-z0-9_-]{93}",
-      "type": "string",
-      "editor": "textfield",
-      "nullable": true,
-      "example": "rzp_live_[A-Za-z0-9]{14}"
-    },
     "scope": {
-      "title": "Where on GitHub to search",
-      "description": "All of GitHub = search across every public repo (fast Code Search if you provide a PAT below, otherwise we search and clone top matches). User or organization = scan every repo owned by a user/org (deep, scans full git history). Single repo = scan one specific repo (deep, scans full git history).",
+      "title": "Search area (scope)",
+      "description": "Search area (scope): normally detected from the GitHub target above, so leave it unless you want to force it. 'All of GitHub' scans every public repo, 'A user or organization' scans every repo an owner has, 'A single repository' scans one repo URL.",
       "type": "string",
       "editor": "select",
-      "default": "all_github",
-      "prefill": "single_repo",
       "enum": [
         "all_github",
         "user_or_org",
@@ -252,54 +260,30 @@
         "A specific user or organization (scan all their repos)",
         "A single repository (scan one repo URL)"
       ],
-      "sectionCaption": "Where to search"
-    },
-    "target": {
-      "title": "Target (user, organization, or repo URL)",
-      "description": "Only used if 'Where on GitHub to search' is 'A user/org' or 'A single repo'. Accepts: a username like 'octocat', an org name like 'microsoft', or a full repo URL like 'https://github.com/owner/name'. Leave blank for 'All of GitHub' mode.",
-      "type": "string",
-      "editor": "textfield",
-      "nullable": true,
-      "example": "https://github.com/owner/repo",
-      "prefill": "https://github.com/trufflesecurity/test_keys"
+      "nullable": true
     },
     "github_pat": {
-      "title": "GitHub Personal Access Token (highly recommended)",
-      "description": "Optional, but recommended. Without a PAT: GitHub gives ~10 search requests/minute, no Code Search, and no private repos. With a PAT: 30 search/min + 5000 core/hour, Code Search unlocks (10× faster, 50× more coverage), private repos accessible. Generate one at https://github.com/settings/tokens - 'public_repo' scope is enough for public scans, 'repo' for private. Stored encrypted by Apify, never logged.",
+      "title": "GitHub token (github_pat)",
+      "description": "GitHub token (github_pat): optional personal access token, but strongly recommended. Without it GitHub allows about 10 searches a minute on a shared IP and no code search; with it you get code search, private repos and 50x the coverage. Create one at https://github.com/settings/tokens with 'public_repo' scope (or 'repo' for private). Stored encrypted, never logged.",
       "type": "string",
       "editor": "textfield",
       "isSecret": true,
       "nullable": true,
-      "sectionCaption": "GitHub authentication (recommended)"
+      "sectionCaption": "GitHub access"
     },
     "max_results": {
-      "title": "Max results",
+      "title": "Result limit (max_results)",
       "description": "Hard cap on output. In fast Code Search mode = max findings to return (1-1000, GitHub's limit). In clone mode = max repos to scan. Higher = more coverage but slower and costs more. 100 is a good starting point.",
       "type": "integer",
       "editor": "number",
       "default": 100,
       "minimum": 1,
       "maximum": 1000,
-      "sectionCaption": "Limits and filters"
-    },
-    "pushed_after": {
-      "title": "Only repos pushed AFTER this date (optional)",
-      "description": "Date filter for repo discovery. Only include repos with last push on or after this date. Format: YYYY-MM-DD. Use to focus on fresh leaks.",
-      "type": "string",
-      "editor": "datepicker",
-      "nullable": true,
-      "example": "2025-01-01"
-    },
-    "pushed_before": {
-      "title": "Only repos pushed BEFORE this date (optional, goldmine filter)",
-      "description": "The goldmine filter. Set this to 1-2 years ago + Maximum stars = 5 → catches forgotten amateur repos where keys were never rotated and nobody else is looking. Format: YYYY-MM-DD.",
-      "type": "string",
-      "editor": "datepicker",
-      "nullable": true,
-      "example": "2024-01-01"
+      "sectionCaption": "Advanced filters",
+      "unit": "results"
     },
     "language": {
-      "title": "Programming language (optional)",
+      "title": "Language (language)",
       "description": "Narrow to repos primarily in this language. Leave blank for all languages. Common values: javascript, typescript, python, go, php, java, ruby.",
       "type": "string",
       "editor": "textfield",
@@ -307,7 +291,7 @@
       "example": "javascript"
     },
     "min_stars": {
-      "title": "Minimum stars (optional)",
+      "title": "Minimum stars (min_stars)",
       "description": "Only consider repos with at least N stars. Use min_stars=100 to focus on prominent production repos.",
       "type": "integer",
       "editor": "number",
@@ -315,15 +299,31 @@
       "minimum": 0
     },
     "max_stars": {
-      "title": "Maximum stars (optional, pair with pushed_before for the goldmine play)",
+      "title": "Maximum stars (max_stars)",
       "description": "Only consider repos with at most N stars. Use max_stars=5 with pushed_before=2 years ago to target low-attention forgotten repos - much higher hit rate of unrotated keys than scanning popular repos.",
       "type": "integer",
       "editor": "number",
       "nullable": true,
       "minimum": 0
     },
+    "pushed_after": {
+      "title": "Pushed after (pushed_after)",
+      "description": "Date filter for repo discovery. Only include repos with last push on or after this date. Format: YYYY-MM-DD. Use to focus on fresh leaks.",
+      "type": "string",
+      "editor": "datepicker",
+      "nullable": true,
+      "example": "2025-01-01"
+    },
+    "pushed_before": {
+      "title": "Pushed before (pushed_before)",
+      "description": "The goldmine filter. Set this to 1-2 years ago + Maximum stars = 5 → catches forgotten amateur repos where keys were never rotated and nobody else is looking. Format: YYYY-MM-DD.",
+      "type": "string",
+      "editor": "datepicker",
+      "nullable": true,
+      "example": "2024-01-01"
+    },
     "include_extensions": {
-      "title": "Only scan these file types (optional)",
+      "title": "File types (include_extensions)",
       "description": "Whitelist of file extensions or filenames. Examples: .env, .yml, .json, Dockerfile. When set, findings in other files are filtered out. Empty = scan everything.",
       "type": "array",
       "editor": "stringList",
@@ -334,88 +334,86 @@
       "nullable": true
     },
     "include_test_keys": {
-      "title": "Include test/sandbox keys in output",
+      "title": "Include test keys (include_test_keys)",
       "description": "Test-mode keys (rzp_test_*, sk_test_*, pk_test_*) are public by design and harmless if leaked. Default ON for completeness. Uncheck to filter them out and only show real (live) keys.",
       "type": "boolean",
       "editor": "checkbox",
       "default": true
     },
+    "max_file_size_mb": {
+      "title": "File size limit (max_file_size_mb)",
+      "description": "Avoid scanning huge binaries. Default 100 MB. Lower = faster scan, may miss leaks in big config dumps.",
+      "type": "integer",
+      "editor": "number",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 500,
+      "unit": "MB"
+    },
     "include_pr_refs": {
-      "title": "Also scan PR branches (refs/pull/*)",
+      "title": "Scan PR branches (include_pr_refs)",
       "description": "Catches secrets that were pushed to a Pull Request and then squash-merged away - the PR head ref still holds them. Default ON. Slight slowdown per repo.",
       "type": "boolean",
       "editor": "checkbox",
       "default": true,
-      "sectionCaption": "Advanced - scan depth & filters"
+      "sectionCaption": "Advanced history"
     },
     "include_all_branches": {
-      "title": "Scan ALL branches, not just default",
+      "title": "Scan all branches (include_all_branches)",
       "description": "Clones with --no-single-branch so feature branches are also scanned. Default ON.",
       "type": "boolean",
       "editor": "checkbox",
       "default": true
     },
     "include_submodules": {
-      "title": "Recurse into git submodules",
+      "title": "Scan submodules (include_submodules)",
       "description": "Adds --recurse-submodules. Catches nested repos with their own .env files. Off by default - can be very slow on big projects.",
       "type": "boolean",
       "editor": "checkbox",
       "default": false
     },
     "include_dangling_objects": {
-      "title": "Also scan dangling commits (rebased-away history)",
+      "title": "Scan deleted commits (include_dangling_o",
       "description": "Uses git fsck --dangling to find commits the developer tried to delete via rebase but didn't garbage-collect. Off by default - adds ~30s per repo.",
       "type": "boolean",
       "editor": "checkbox",
       "default": false
     },
     "commit_since": {
-      "title": "Only commits after this date (optional)",
+      "title": "Commits after (commit_since)",
       "description": "Filter on commit date, not repo discovery date. Format YYYY-MM-DD. Catches only recently-introduced leaks.",
       "type": "string",
       "editor": "datepicker",
       "nullable": true
     },
     "commit_until": {
-      "title": "Only commits before this date (optional)",
+      "title": "Commits before (commit_until)",
       "description": "Filter on commit date. Pair with commit_since for a date window.",
       "type": "string",
       "editor": "datepicker",
       "nullable": true
     },
     "commit_author": {
-      "title": "Only commits by this author (regex, optional)",
+      "title": "Commit author (commit_author)",
       "description": "Filter by author name/email. Example: 'alice' or '.*@example\\.com'. Useful when auditing a specific developer.",
       "type": "string",
       "editor": "textfield",
       "nullable": true
     },
     "commit_message_grep": {
-      "title": "Only commits whose message matches (regex, optional)",
+      "title": "Commit message match (commit_message_gre",
       "description": "Filter by commit message regex. Example: 'wip|temp|test|hack' to surface sloppy commits where leaks usually slip in.",
       "type": "string",
       "editor": "textfield",
       "nullable": true
     },
     "commit_introduced_string": {
-      "title": "Only commits that INTRODUCED this string (pickaxe, optional)",
+      "title": "Introduced string (commit_introduced_str",
       "description": "Fastest historical search possible. Example: 'rzp_live_' finds only commits where this string first appeared anywhere. Massive speedup vs full history scan.",
       "type": "string",
       "editor": "textfield",
       "nullable": true
-    },
-    "max_file_size_mb": {
-      "title": "Skip files larger than (MB)",
-      "description": "Avoid scanning huge binaries. Default 100 MB. Lower = faster scan, may miss leaks in big config dumps.",
-      "type": "integer",
-      "editor": "number",
-      "default": 100,
-      "minimum": 1,
-      "maximum": 500
     }
   },
-  "required": [
-    "search_for",
-    "scope"
-  ]
+  "required": []
 }

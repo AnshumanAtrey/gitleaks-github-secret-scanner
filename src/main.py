@@ -89,6 +89,23 @@ class Inputs:
     max_file_size_mb: int
 
 
+def _infer_scope(target: str | None) -> str:
+    """The form shows no 'scope' selector: a bare run (no target) scans all of GitHub,
+    a repo URL or owner/name scans that one repo, a bare name scans an owner's repos.
+    An explicit 'scope' in the input still overrides this (power users, API callers)."""
+    if not target:
+        return "all_github"
+    t = target.strip()
+    low = t.lower()
+    if "github.com/" in low:
+        path = low.split("github.com/", 1)[-1].strip("/")
+        segs = [s for s in path.split("/") if s]
+        return "single_repo" if len(segs) >= 2 else "user_or_org"
+    if low.startswith(("http://", "https://")):
+        return "single_repo"
+    return "single_repo" if "/" in t else "user_or_org"
+
+
 def read_inputs(data: dict) -> Inputs:
     pa = data.get("pushed_after") or None
     pb = data.get("pushed_before") or None
@@ -100,12 +117,12 @@ def read_inputs(data: dict) -> Inputs:
     if cu and len(cu) > 10: cu = cu[:10]
     return Inputs(
         search_for=data.get("search_for", "platform"),
-        platform=data.get("platform", "razorpay"),
+        platform=data.get("platform") or "all",
         platform_custom=data.get("platform_custom") or None,
         additional_platforms=data.get("additional_platforms") or [],
         keyword=data.get("keyword") or None,
         regex_pattern=data.get("regex_pattern") or None,
-        scope=data.get("scope", "all_github"),
+        scope=data.get("scope") or _infer_scope(data.get("target") or None),
         target=data.get("target") or None,
         github_pat=data.get("github_pat") or None,
         max_results=int(data.get("max_results", 100)),
@@ -165,6 +182,9 @@ def build_scan_service(inputs: Inputs, services: dict[str, Service]) -> tuple[Se
 
 
 def _service_from_platform(inputs: Inputs, services: dict[str, Service]) -> tuple[Service, str]:
+    if inputs.platform in ("all", "", None):
+        merged = _merge_services(services, display_name="all known services")
+        return merged, "all"
     if inputs.platform == "custom":
         name = (inputs.platform_custom or "").strip()
         if not name:
