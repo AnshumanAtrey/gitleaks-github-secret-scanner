@@ -6,6 +6,13 @@ Available as an [Apify Actor](https://apify.com/anshumanatrey/gitleaks-github-se
 
 ---
 
+**Use it from an AI assistant:**
+
+- **Claude** (claude.ai and the desktop app): [Add Gitleaks Cloud to Claude](https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Gitleaks%20Cloud&connectorUrl=https%3A%2F%2Fmcp.apify.com%3Ftools%3Danshumanatrey%2Fgitleaks-github-secret-scanner), click Continue, sign in to Apify, Allow, and ask in plain words.
+- **Claude Code:** `claude mcp add --transport http gitleaks-github-secret-scanner "https://mcp.apify.com?tools=anshumanatrey/gitleaks-github-secret-scanner"`, then run `/mcp` to sign in to Apify.
+- **Codex:** `codex mcp add gitleaks-github-secret-scanner --url "https://mcp.apify.com?tools=anshumanatrey/gitleaks-github-secret-scanner"`, then `codex mcp login gitleaks-github-secret-scanner`.
+- **Any other MCP client:** `https://mcp.apify.com?tools=anshumanatrey/gitleaks-github-secret-scanner`, signed in with Apify or an `Authorization: Bearer <APIFY_TOKEN>` header.
+
 ## What does it do?
 
 Scans a GitHub user, org, or repo for leaked API keys and credentials across 30+ critical services: Razorpay, Stripe, AWS, OpenAI, Anthropic, Gemini, Supabase, Firebase, GitHub PATs, Twilio, SendGrid, Slack, Discord, Telegram, plus Indian fintech APIs (Cashfree, PayU, Surepass, Decentro, Karza, Attestr, Tartan). Smart key-secret pairing detects related credentials in the same file (e.g., Razorpay's two-part key_id + key_secret).
