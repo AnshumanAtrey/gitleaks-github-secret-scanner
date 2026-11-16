@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "gitleaks-github-secret-scanner": {
+      "url": "https://mcp.apify.com?tools=anshumanatrey/gitleaks-github-secret-scanner",
+      "headers": {
+        "Authorization": "Bearer <YOUR_APIFY_TOKEN>"
+      }
+    }
+  }
+}
